@@ -1,0 +1,30 @@
+.NavLink {
+  // display: flex;
+  text-decoration: none;
+  width: 100%;
+  padding: 0 9q;
+  color: black;
+  // text-align: center;
+}
+
+.CollapseClick {
+  cursor: pointer;
+  // &.CollapseClickActive {
+  // background-color: rgb(237, 231, 246);
+  // }
+
+  .ArrowDownIcon {
+    transform: rotate(180deg);
+  }
+}
+
+div.overview {
+  $paddingLR: 9q;
+  padding-left: $paddingLR;
+  padding-right: $paddingLR;
+}
+
+div.ListItemButton {
+  border-radius: 99q;
+  margin: 1q 9q;
+}

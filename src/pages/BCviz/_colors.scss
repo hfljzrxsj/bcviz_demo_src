@@ -1,0 +1,56 @@
+$color: #d13b0e;
+$more-hightlight-color: #45e40b;
+$hightlight-color: #08bff7;
+$no-highlight-color: #be14fb;
+$font-color: #000;
+$font-color--shadow: transparentize($font-color, .8);
+$hightlight-color--shadow: transparentize($hightlight-color, .8);
+
+
+
+// temp
+$t1: linear-gradient(rgb(255, 0, 0), rgb(255, 115, 0), rgb(255, 251, 0), rgb(72, 255, 0), rgb(0, 255, 213), rgb(0, 43, 255), rgb(122, 0, 255), rgb(255, 0, 200));
+$t2: linear-gradient(hsl(0, 100%, 50%), hsl(60, 100%, 50%), hsl(120, 100%, 50%), hsl(180, 100%, 50%), hsl(240, 100%, 50%), hsl(300, 100%, 50%));
+$t3: linear-gradient(hsla(0, 100%, 75%, 0.8),
+    hsla(60, 100%, 75%, 0.8),
+    hsla(120, 100%, 75%, 0.8),
+    hsla(180, 100%, 75%, 0.8),
+    hsla(240, 100%, 75%, 0.8),
+    hsla(300, 100%, 75%, 0.8));
+$t4: linear-gradient(#f9ccff, #e6bbf9, #9ec6f9, #55e6ee, #91f5d1, #f9ffbf);
+$t5: linear-gradient(#652487, #443ac3, #0174b7, #04988e);
+
+//颜色
+/*
+1. react-toast -> 官网、:root的css变量
+2. MUI的color（https://mui.com/material-ui/customization/color/）、Palette（https://mui.com/material-ui/customization/palette/）
+3. https://m2.material.io/inline-tools/color/
+4. https://developer.mozilla.org/zh-CN/docs/Web/CSS/named-color
+5. https://hl.qin-juan-ge-zhu.top/styles/gradient-light.min.css
+*/
+
+%hjx {
+  //https://www.researchrabbitapp.com/
+  background: rgba(255 255 255 / 38%);
+  box-shadow: 0 0px 20px #00000021;
+  border-radius: 18px;
+  padding: 60px 20px;
+  margin: 20px;
+  //https://www.researchrabbitapp.com/assets/background-114687f1.webp
+
+
+  box-shadow: 0 3px 20px #7fc2f2b3;
+  animation: pulse-signup-button .7s infinite alternate ease-in;
+  transition: transform .3s ease, box-shadow .3s ease;
+
+  border-radius: 5px;
+  background-color: rgb(28 153 242);
+  font-weight: 700;
+  box-shadow: 0 3px 9px #7fc2f266;
+
+  @keyframes pulse-signup-button {
+    to {
+      opacity: .75
+    }
+  }
+}

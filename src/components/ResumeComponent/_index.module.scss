@@ -1,0 +1,19 @@
+@import '../../pages/Resume/index.module.scss';
+
+.PaperButtons {
+  display: flex;
+  gap: 9q;
+  justify-content: space-around;
+  padding: 9q;
+  flex-wrap: wrap;
+}
+
+.CollapseButton {
+  display: flex;
+  gap: 9q;
+  justify-content: space-between;
+
+  span:hover {
+    outline: solid;
+  }
+}

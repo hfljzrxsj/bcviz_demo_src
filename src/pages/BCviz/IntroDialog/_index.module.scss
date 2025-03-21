@@ -1,0 +1,16 @@
+.align-center {
+  text-align: center;
+}
+
+.Paper {
+  padding: 9q;
+
+  .title-h {
+    @extend .align-center;
+    padding: 9q;
+  }
+
+  .ul > li {
+    padding: 9q;
+  }
+}

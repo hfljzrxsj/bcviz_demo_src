@@ -1,0 +1,68 @@
+      <polyline
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        points="86,28 258,56 431,46 603,9 775,9 948,37 1120,19"
+      ></polyline>
+      <circle
+        cx="86"
+        cy="28"
+        transform-origin="86 28"
+      ></circle><text
+        x="86"
+        y="8"
+        transform-origin="86 28"
+      >1780</text>
+      <circle
+        cx="258"
+        cy="56"
+        transform-origin="258 56"
+      ></circle><text
+        x="258"
+        y="36"
+        transform-origin="258 56"
+      >1500</text>
+      <circle
+        cx="431"
+        cy="46"
+        transform-origin="431 46"
+      ></circle><text
+        x="431"
+        y="26"
+        transform-origin="431 46"
+      >1550</text>
+      <circle
+        cx="603"
+        cy="9"
+        transform-origin="603 9"
+      ></circle><text
+        x="603"
+        y="54"
+        transform-origin="603 9"
+      >2080</text>
+      <circle
+        cx="775"
+        cy="9"
+        transform-origin="775 9"
+      ></circle><text
+        x="775"
+        y="54"
+        transform-origin="775 9"
+      >2080</text>
+      <circle
+        cx="948"
+        cy="37"
+        transform-origin="948 37"
+      ></circle><text
+        x="948"
+        y="17"
+        transform-origin="948 37"
+      >1720</text>
+      <circle
+        cx="1120"
+        cy="19"
+        transform-origin="1120 19"
+      ></circle><text
+        x="1120"
+        y="-1"
+        transform-origin="1120 19"
+      >1910</text>

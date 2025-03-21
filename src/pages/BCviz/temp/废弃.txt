@@ -1,0 +1,49 @@
+{drawTeamData.map((team, ind) => {
+            const { length } = team;
+            const lastIndex = length - 1;
+            const [, , , x1, y1] = team[0] ?? [];
+            const [, , , x2, y2] = team[lastIndex] ?? [];
+
+            return (<>
+              <g>
+                <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="black"
+                  className={style['line']}
+                />
+                {team.map(([k, v, i, x, y], teamInd) => {
+                  
+                  const hoverLineClass = {
+                    [style['hover_line'] ?? '']: teamInd !== 0 && teamInd !== lastIndex,
+                  };
+                  return <>
+
+                    <Tooltip
+                      {...tooltipProps}
+                    >
+                      <text
+                        x={x}
+                        y={svgHeight}
+                        className={classNames(style['text'],
+                          hoverLineClass,
+                        )}
+                      >{k}</text>
+                    </Tooltip>
+                    {/* <input checked={true} id={k} type="checkbox" className={style['checkbox']}></input> */}
+                    {(true) ? <Tooltip
+                      {...tooltipProps}
+                    >
+
+                      <circle
+                        cx={x}
+                        cy={y}
+                        className={
+                          classNames(style['circle'],
+                            hoverLineClass,
+                          )}
+                      ></circle></Tooltip> : null}
+                  </>;
+                }
+                )}
+
+              </g>
+            </>);
+          })}

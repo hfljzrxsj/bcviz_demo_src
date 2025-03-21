@@ -1,0 +1,14 @@
+.ResumeSame {
+  position: absolute;
+  float: left;
+  bottom: 0;
+  left: 0;
+  opacity: 0;
+  transition: .9s;
+  pointer-events: fill;
+
+  &:hover {
+    opacity: 1;
+    pointer-events: all;
+  }
+}

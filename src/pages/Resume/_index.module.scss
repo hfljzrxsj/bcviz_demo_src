@@ -1,0 +1,18 @@
+.Paper {
+  display: flex;
+  flex-direction: column;
+  gap: 9q;
+  padding: 9q;
+}
+
+.PaperBody {
+  padding-bottom: 9ex;
+  position: relative;
+}
+
+.toTop {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  float: right;
+}

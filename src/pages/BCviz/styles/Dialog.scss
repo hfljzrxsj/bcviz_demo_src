@@ -1,0 +1,12 @@
+.Dialog :global(.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation24.MuiDialog-paper.MuiDialog-paperScrollPaper.MuiDialog-paperWidthSm) {
+  max-width: max-content;
+
+  .title {
+    text-align: center;
+  }
+
+  .Paper {
+    padding: 9q;
+
+  }
+}

@@ -1,0 +1,17 @@
+.MainFrame {
+  display: flex;
+  $m: 9q;
+  margin: $m;
+
+  //https: //developer.mozilla.org/zh-CN/docs/Web/CSS/@media
+  //https: //developer.mozilla.org/zh-CN/docs/Web/CSS/@media/orientation
+  //portrait 纵向，高大于宽
+  //landscape 横向，宽大于高
+  @media screen and (orientation:landscape) {
+    gap: var(--gap);
+  }
+
+  > div:last-child {
+    flex: 1;
+  }
+}

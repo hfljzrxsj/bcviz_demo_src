@@ -1,0 +1,16 @@
+@mixin hover_style_common() {
+  // outline-color: $color;
+  // outline-style: solid;
+  // outline-width: 1q;
+  border-radius: 9q;
+  box-shadow: 0 0 9q 9q currentColor;
+  text-shadow: 0 0 9q currentColor;
+
+  // color: transparentize($color, .8);
+  // text-decoration: currentColor wavy underline;
+  filter: brightness(1.1) contrast(1.1) drop-shadow(0 0 9q currentColor) hue-rotate(9deg) saturate(1.1);
+  font-weight: bold;
+  background-color: currentColor;
+  // transform: scale(1.1);
+  // scale: 1.1;
+}
