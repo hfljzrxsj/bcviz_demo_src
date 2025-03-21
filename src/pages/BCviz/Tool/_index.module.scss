@@ -1,0 +1,19 @@
+.Tool {
+  display: flex;
+  gap: 9q;
+  justify-content: center;
+  padding: 9q;
+
+  .x-line-mode {
+    padding: initial;
+
+    &-label {
+      height: 100%;
+      margin: initial;
+      padding-right: 9px;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+    }
+  }
+}

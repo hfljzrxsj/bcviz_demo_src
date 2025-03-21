@@ -1,0 +1,7 @@
+lodash
+lodash-es
+underscore
+underscore.string
+ramda
+ramda-adjunct
+mout

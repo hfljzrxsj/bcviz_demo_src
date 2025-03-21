@@ -1,0 +1,361 @@
+@import './shareStyle';
+
+.Main {
+  @extend %Main;
+
+  flex-direction: column;
+
+
+  .Table {
+    display: flex;
+    justify-content: center;
+
+    .table {
+      display: flex;
+      // outline: solid;
+      // margin-left: auto;
+      margin: 0 auto;
+      min-width: 100%;
+    }
+  }
+
+  // line,
+  //   polyline {
+  //     stroke: $stroke-color;
+  //     stroke-opacity: .8;
+  //     opacity: .8;
+
+  //     &:hover {
+  //       stroke-opacity: 1;
+  //       opacity: 1;
+  //       @include hover_style_common($stroke-color)
+  //     }
+  //   }
+
+
+
+
+
+
+  .SVG {
+
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    margin: 9q;
+
+  }
+}
+
+.Accordion {
+  margin: 9q;
+  // outline: rgba(0, 0, 0, .5) solid;
+  // box-shadow: 0 0 9q 9q rgba(0, 0, 0, .5);
+  border-radius: 9q;
+
+  &-Summary {
+    $color: rgba(0, 0, 0, .1);
+
+    &:global(.Mui-expanded) {
+      border-block: thin solid $color;
+    }
+
+
+    &:hover {
+      background-color: $color;
+    }
+  }
+
+  &-Details {
+    padding: 9q;
+    // box-shadow: 0 0 9q 9q rgba(0, 0, 0, .5);
+
+    // &--SVG {
+    //   display: flex;
+    // }
+  }
+}
+
+@mixin stroke-opacity($opacity) {
+  stroke-opacity: $opacity;
+
+  .circle {
+    stroke-opacity: $opacity;
+  }
+}
+
+@mixin color-g($color) {
+
+  color: transparentize($color, .8);
+
+  .circle {
+    stroke: var(--color, $color);
+  }
+
+  &.line {
+    stroke: var(--color, $color);
+  }
+
+  .text:hover {
+    stroke: var(--color, $color);
+  }
+}
+
+@mixin common-svg($border-width, $r-border_radix, $opacity) {
+  width: 100%;
+  height: 100%;
+  // outline: solid;
+  display: block;
+  $r: $border-width * $r-border_radix;
+
+  * {
+    transition: 1s;
+    transform-box: fill-box;
+    transform-origin: center;
+
+    &:hover {
+      @include hover_style_common();
+    }
+  }
+
+  .line,
+  .circle {
+    &:hover {
+      stroke-opacity: 1;
+      opacity: 1;
+    }
+  }
+
+
+  .line {
+    // fill: none;
+    color: var(--color, $no-highlight-color);
+    stroke: currentColor;
+    // stroke-width: calc($border-width / 2);
+    stroke-width: $border-width;
+    stroke-linecap: round;
+    // @include opacity();
+
+    // @extend %opacity;
+
+    &:hover {
+      stroke-width: $border-width;
+    }
+  }
+
+  .no-highlight {
+    @include color-g($no-highlight-color);
+    @include stroke-opacity($base-opacity);
+  }
+
+  .highlight {
+    @include color-g($hightlight-color);
+    @include stroke-opacity($hightlight-opacity);
+  }
+
+  .more-highlight {
+    @include color-g($more-hightlight-color);
+    @include stroke-opacity($more-hightlight-opacity);
+  }
+
+
+
+  .g {
+    // @include opacity();
+
+    %hover_circle {
+      $scale-radix: 2;
+      stroke-width: calc($border-width / $scale-radix);
+      // r: $r * (1 + calc(1 / $scale-radix));
+      r: $r * $scale-radix;
+    }
+
+    %hover_text {
+      // outline: {
+      //   color: $stroke-color;
+      //   style: solid;
+      //   width: 1q;
+      // }
+      font-size: 100% * $r-border_radix;
+      stroke: currentColor;
+    }
+
+    .text {
+      transform-box: fill-box;
+      text-anchor: middle;
+    }
+
+
+    .circle {
+      fill: #eee;
+      stroke-width: $border-width;
+      transform-box: fill-box;
+      transform-origin: center;
+      r: $r;
+    }
+
+    .text,
+    .circle {
+      cursor: pointer;
+    }
+
+    &:hover {
+      transform: scale(1);
+
+      .circle {
+        @extend %hover_circle;
+
+      }
+
+      .text {
+        @extend %hover_text;
+      }
+    }
+
+  }
+
+}
+
+.graph-svg {
+  @include common-svg(8, 2, .6);
+
+  .text {
+    alignment-baseline: central;
+    font-size: 100%;
+  }
+
+}
+
+.svg {
+  $stroke-width: 8;
+  @include common-svg($stroke-width, 1, .6);
+  // $margin: 9q;
+
+  flex: 1;
+
+  .line {
+    stroke-opacity: $base-opacity;
+  }
+
+
+  %line_show {
+
+    @keyframes line_how {
+      to {
+        opacity: 1;
+      }
+    }
+
+    animation: line_how 1s forwards;
+  }
+
+  %common-coordinate-axis {
+    color: $font-color;
+    stroke: currentColor;
+    stroke-width: calc($stroke-width / 2);
+    stroke-linecap: round;
+
+    &:hover {
+      stroke-width: $stroke-width ;
+    }
+  }
+
+  .coordinate-axis {
+
+
+    &-x {
+      @extend %common-coordinate-axis;
+    }
+
+    &-y {
+      @extend %common-coordinate-axis;
+    }
+  }
+
+  // //坐标轴
+  // %hover-coordinate-axis {
+  //   & ~ {
+  //     .hover {
+
+  //       &-x // ,&-y
+
+  //         {
+  //         display: initial;
+  //         @extend %line_show;
+  //       }
+  //     }
+  //   }
+  // }
+
+  @mixin hover-xORy--show {
+    display: initial;
+    @extend %line_show;
+    @include hover_style_common();
+  }
+
+  .text {
+    alignment-baseline: ideographic;
+
+    &:hover {
+      & ~ {
+        .hover-y {
+          @include hover-xORy--show;
+        }
+      }
+    }
+  }
+
+  .axis-text {
+    @extend .text;
+    alignment-baseline: central;
+    color: $hightlight-color--shadow;
+  }
+
+
+
+  .circle,
+  .axis-text {
+
+    &:hover {
+
+      & ~ {
+        .hover-x:not(.hover-x--no-show) {
+          @include hover-xORy--show;
+        }
+      }
+    }
+
+  }
+
+  .hover {
+
+    &-x,
+    &-y {
+      stroke-width: $stroke-width;
+      stroke-opacity: .5;
+      stroke-linecap: round;
+      pointer-events: none;
+      display: none;
+      stroke-dasharray: calc(var(--stroke-dasharray) / 2);
+      transition: 1s;
+      opacity: 0;
+    }
+
+    &-x {
+      stroke: $hightlight-color;
+      color: $hightlight-color--shadow;
+    }
+
+    &-y {
+      stroke: $font-color--shadow;
+      color: $font-color--shadow;
+    }
+
+    &-click-line {
+      @include hover-xORy--show;
+      pointer-events: initial;
+      stroke-opacity: 1;
+      cursor: pointer;
+    }
+  }
+}

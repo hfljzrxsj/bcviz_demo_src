@@ -1,0 +1,7 @@
+@import '../../BCviz/styles/Dialog';
+@import '../styles/Fab';
+
+.Fab {
+  @extend %Fab;
+  position: fixed;
+}

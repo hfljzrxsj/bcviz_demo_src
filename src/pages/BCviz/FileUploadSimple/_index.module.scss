@@ -1,0 +1,47 @@
+.title {
+  text-align: center;
+}
+
+.Paper {
+  padding: 9q;
+
+  &.Input {
+    display: flex;
+
+    .input-file {
+      // clip: rect(0 0 0 0);
+      // -webkit-clip-path: inset(50%);
+      // clip-path: inset(50%);
+      // height: 1px;
+      // overflow: hidden;
+      // position: absolute;
+      // bottom: 0;
+      // left: 0;
+      // white-space: nowrap;
+      width: 0;
+    }
+
+    .TextField {
+      display: flex;
+      flex-direction: column;
+      gap: 9q;
+      padding: 9q;
+
+      &-Paper {
+        display: flex;
+
+        &-input {
+          min-width: max-content;
+        }
+      }
+    }
+  }
+
+  .FileInfo-Button {
+    display: flex;
+    gap: 9q;
+    width: max-content;
+  }
+
+
+}

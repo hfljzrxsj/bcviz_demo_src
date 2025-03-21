@@ -1,0 +1,140 @@
+@import '../BCviz/shareStyle';
+
+body {
+  :global(.tanContent) {
+    text-shadow: 0 0 9px currentColor;
+    /* 设置字体加粗 */
+    font-weight: bold;
+    /* 设置文本颜色为棕褐色 */
+    color: Tan;
+  }
+
+  .Main {
+    background-image: url(//www.researchrabbitapp.com/assets/background-114687f1.webp);
+    @extend %Main;
+    align-items: center;
+    gap: 9q;
+    padding: 9q;
+    font-family: 'Consolas';
+
+    &-Left {
+      display: flex;
+      flex-direction: column;
+      gap: 9q;
+
+      .Select {
+        padding: 9q;
+      }
+
+      .TabPanel {
+        padding: unset;
+
+        .Paper-text {
+          padding: 9q;
+          max-width: fit-content;
+        }
+      }
+
+      @import '../../cls';
+
+      :global(#{$buttonCls}) {
+        //.MuiButton-fullWidth.MuiButton-sizeLarge.MuiButton-containedSizeLarge
+        white-space: initial;
+      }
+    }
+
+
+
+    &-Mid {
+      flex: 1;
+      transition: 1s;
+
+      .Tab {
+        &:global(.Mui-selected) {
+          font-weight: bold;
+          cursor: initial;
+        }
+
+        &:global(:not(.Mui-selected)):hover {
+          color: #40a9ff;
+        }
+
+        // &:global(.Mui-disabled) {
+        //   cursor: not-allowed;
+        //   pointer-events: unset;
+        // }
+      }
+    }
+
+    &-Right {
+      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 9q;
+      background-color: transparent;
+
+      &--Show {
+        display: flex;
+        flex-direction: column;
+        max-height: 97vh;
+        overflow: auto;
+
+        // gap: 9q;
+
+        &--Text {
+          text-align: center;
+          // padding: 9q;
+          max-width: min-content;
+          margin: auto;
+        }
+
+        &--Num {
+          text-align: center;
+        }
+      }
+    }
+
+    .hidden {
+      display: none;
+    }
+
+  }
+}
+
+.Chart {
+
+  // position: relative;
+  min-height: 84vh;
+  width: 100%;
+  // &-inner {
+
+  //   // min-height: 84vh;
+  // }
+}
+
+.Modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+
+  // min-width: 99vw;
+  .CircularProgress {
+    width: 99vmin !important;
+    height: 99vmin !important;
+  }
+}
+
+// :global(.MuiPaper-root.MuiPaper-elevation.MuiPaper-rounded.MuiPaper-elevation24) {
+// background-color: rgba(255 255 255 / 38%);
+// box-shadow: 0 0px 20px #00000021;
+// border-radius: 18px;
+// }
+
+// :global(.MuiButtonBase-root.MuiButton-root.MuiButton-contained.MuiButton-containedPrimary.MuiButton-colorPrimary:not(.Mui-disabled)) {
+//   border-radius: 5px;
+//   // background-color: rgb(28 153 242);
+//   font-weight: 700;
+//   box-shadow: 0 3px 9px #7fc2f266;
+// }

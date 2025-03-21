@@ -1,0 +1,24 @@
+.echarts {
+  min-height: calc(100vh - var(--offsetTop));
+  width: 100%;
+}
+
+.noLoading {
+  padding-top: 0;
+}
+
+.loading {
+  @extend .noLoading;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  > span {
+    min-height: 54vmin;
+    min-width: 54vmin;
+  }
+
+  > div {
+    display: none;
+  }
+}

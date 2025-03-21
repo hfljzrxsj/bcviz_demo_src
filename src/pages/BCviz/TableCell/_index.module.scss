@@ -1,0 +1,48 @@
+.table-cell {
+  // outline: solid;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+
+  &:hover {
+    // cursor: pointer;
+    background-color: rgba(0, 0, 0, .05);
+    border-radius: initial;
+  }
+
+  @import '../_colors';
+  @import '../_hover_style_common';
+
+  // .no-highlight {
+
+  // }
+
+  @mixin common-highlight($color) {
+    @include hover_style_common();
+    color: transparentize($color, .95);
+  }
+
+  &.highlight {
+    @include common-highlight($hightlight-color)
+  }
+
+  &.more-highlight {
+    @include common-highlight($more-hightlight-color)
+  }
+
+
+  &-Button {
+    // padding: 9q;
+    // outline: solid;
+    text-align: center;
+    transition: .1s;
+    min-width: max-content;
+    border-radius: initial;
+
+
+    // &:hover {
+    // background-color: rgba(0, 0, 0, .2);
+    // }
+  }
+
+}

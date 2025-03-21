@@ -1,0 +1,56 @@
+.root {
+  margin: 9q;
+  display: flex;
+  flex-direction: column;
+
+  .Skeleton {
+    padding: 9q;
+
+    > span {
+      min-height: var(--height);
+    }
+  }
+
+  td,
+  th {
+    border-radius: unset;
+
+    &.aLink {
+      color: #06c;
+      cursor: pointer;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+
+  th {
+    font-weight: 900;
+    font-size: 120%;
+  }
+
+  thead > tr > th {
+    background-color: #eceff1;
+  }
+}
+
+.Dialog > div > div {
+  padding: 9q;
+
+  > h1 {
+    text-align: center;
+  }
+
+  .TabList {
+    button {
+      flex: 1;
+    }
+
+    ~ div:not([hidden]) {
+      display: flex;
+      flex-direction: column;
+      gap: 9q;
+    }
+  }
+}

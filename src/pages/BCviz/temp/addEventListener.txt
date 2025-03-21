@@ -1,0 +1,6 @@
+DocumentAndElementEventHandlers
+Element
+GlobalEventHandlers
+ScriptProcessorNode
+ShadowRoot
+XMLDocument

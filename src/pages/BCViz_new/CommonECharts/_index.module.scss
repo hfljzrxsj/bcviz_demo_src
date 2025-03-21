@@ -1,0 +1,6 @@
+@import '../styles/Fab';
+
+.Fab {
+  @extend %Fab;
+  position: absolute;
+}

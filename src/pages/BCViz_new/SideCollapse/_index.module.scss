@@ -1,0 +1,39 @@
+.Main-Side {
+  height: max-content;
+  display: flex;
+  align-content: center;
+  justify-content: center;
+
+  .Tool {
+    flex-direction: column;
+
+  }
+
+  .IconButton {
+    height: min-content;
+    margin: auto;
+    order: var(--order, initial);
+
+    .triangle {
+      border: {
+        // style: solid;
+        color: var(--toastify-color-info, #000);
+        left-style: solid;
+        bottom-style: solid;
+        radius: 0;
+      }
+
+      transition:transform 1s;
+      transform: rotate(var(--initRotate));
+      // border-left-style: solid;
+      // border-bottom-style: solid;
+      width: 9q;
+      height: 9q;
+
+      &.rotate {
+        transform: rotate(var(--clickRotate));
+      }
+    }
+  }
+
+}

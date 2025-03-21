@@ -1,0 +1,14 @@
+$base-opacity: .6;
+$hightlight-opacity: .8;
+$more-hightlight-opacity: 1;
+@import './_colors';
+@import './_hover_style_common';
+
+%Main {
+  display: flex;
+  min-height: inherit;
+
+  * {
+    // user-select: none;
+  }
+}
