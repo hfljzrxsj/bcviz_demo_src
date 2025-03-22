@@ -101,6 +101,7 @@
     "vite-plugin-svgo": "*"
   },
   "devDependencies": {
+    "npm": "*",
     "cnpm": "*",
     "pnpm": "*",
     "yarn": "*"

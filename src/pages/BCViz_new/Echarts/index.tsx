@@ -275,8 +275,9 @@ const getKey = (TabKey: TabKey) => {
   // const a = `${new Error().stack}${TabKey}`;
   return `${Echarts.name}${TabKey}`;
 };
-type allShowEChartsKey = 'line' | 'graph' | 'result';
-type allShowEChartsKeyArr = ReadonlyArray<allShowEChartsKey>;
+type AllShowEChartsKey = 'line' | 'graph' | 'result';
+type AllShowEChartsKeyArr = ReadonlyArray<AllShowEChartsKey>;
+const allShowEChartsKeyArr: AllShowEChartsKeyArr = ['line', 'graph', 'result'];
 export default function Echarts (props: {
   readonly graphData: OriginGraphDataReadonlyArr;
   readonly resultGraph: OriginGraphDataReadonlyArr | undefined;
@@ -479,6 +480,8 @@ export default function Echarts (props: {
   const ResultGraphChartsOption = useMemo(() => {
     if (!isNotGetResult && !resultGraph?.length) {
       const label = inputLabels[selectMode];
+      console.log(useSetInputST[0], label);
+
       return {
         title: {
           text: `${selectMode} result is empty`,
@@ -527,9 +530,9 @@ export default function Echarts (props: {
   const LineCharts = <CommonCharts option={lineChartsOption} onParams={[onDblClick, onClick]} />;
   const GraphCharts = <CommonCharts option={GraphChartsOption} onParams={[onDblClick, onClick]} />;
   const ResultCharts = <CommonCharts option={ResultGraphChartsOption} />;
-  const [allShowECharts, setAllShowECharts] = useSafeState<allShowEChartsKeyArr>(['line', 'graph']);
+  const [allShowECharts, setAllShowECharts] = useSafeState<AllShowEChartsKeyArr>(['line', 'graph']);
   const previousAllShowECharts = usePrevious(allShowECharts);
-  const keyToJSX = useMemoizedFn((jsx: JSX.Element, key: allShowEChartsKey) => {
+  const keyToJSX = useMemoizedFn((jsx: JSX.Element, key: AllShowEChartsKey) => {
     return allShowECharts.includes(key) ? jsx : null;
   });
   return <>
@@ -555,7 +558,7 @@ export default function Echarts (props: {
                   target: { value },
                 } = event;
                 setAllShowECharts(
-                  typeof value === 'string' ? (value.split(',') as allShowEChartsKeyArr) : value,
+                  typeof value === 'string' ? (value.split(',') as AllShowEChartsKeyArr) : value,
                 );
               }}
               input={<OutlinedInput label="Chip" />}
@@ -568,7 +571,7 @@ export default function Echarts (props: {
                 </>
               )}
             >
-              {allShowECharts.map((name) => (
+              {allShowEChartsKeyArr.map((name) => (
                 <MenuItem
                   key={name}
                   value={name}

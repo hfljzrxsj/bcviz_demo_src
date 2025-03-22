@@ -217,7 +217,7 @@ export const getHighlightLevelFromObj = (obj?: PosDataObj) => {
 };
 const getColor = (colors: ReadonlyArray<string | undefined>) => {
   if (colors.includes(clickMultiDotColor)
-    // && colors.includes(uvHighlightColor)
+    && colors.includes(uvHighlightColor)
   ) {
     return uvHighlightColor;
   }

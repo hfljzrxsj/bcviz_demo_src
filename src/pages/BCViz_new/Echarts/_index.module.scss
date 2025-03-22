@@ -1,7 +1,13 @@
 .AllPanel {
   &-ECharts {
-    display: grid;
-    grid-row: auto;
+    display: flex;
+    width: 100%;
+    // grid-row: auto;
+    // grid-template-columns: 1fr 1fr;
+    /* 等宽两列 */
+    gap: 9q;
+    /* 列间距 */
+    min-height: 84vh;
   }
 
 }

@@ -12,7 +12,8 @@ import type { OriginDataObj, OriginDataObjArr, OriginGraphDataReadonlyArr, Origi
 import { useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 import { uniq } from "lodash";
-import type { NullValue } from "rollup";
+// import type { NullValue } from "vite/node_modules/rollup";
+// import type { NullValue } from "rollup";
 import { ToastContainer } from "react-toastify";
 const { error } = console;
 // import {
@@ -327,13 +328,11 @@ export default function FileUpload (props: FileUploadProps) {
   );
 };
 
-export { type NullValue };
+// export { type NullValue };
 
 /* 马上要做的：
-2. 多点选取
-2. 二部图的点坐标重新设计，把getDataArrWithPos和UV合并起来，并且突出显示的点的zIndex大
+2. （失败）二部图的点坐标重新设计，把getDataArrWithPos和UV合并起来
 3. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）
-4. 大数据量图只保留前36个（1190/64=18，u和v各18个）
 
   */
 // 在别的Modes也要显示size 的直线
@@ -352,6 +351,8 @@ export { type NullValue };
 // Tooltip移到example时，从indexedb拿文件信息（onOpen时拿）
 // 把BCviz_new所有值全部迁移到useContext
 // search result的结果应该从dataArrWithPos过滤有颜色的，这样大数据量图的HSS也能用
+// 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
+// 没结果时，展示在ECharts里的信息需要展示全部
 
 
 

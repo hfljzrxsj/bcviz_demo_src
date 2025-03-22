@@ -140,6 +140,7 @@ export default function ChartsTabPanel ({ children, ...TabPanelProps }: Children
   // }}
   >
     <Paper elevation={24}
+    // style={{ minHeight: '87vh' }}
     // className={style['Chart'] ?? ''}
     >
       {children}

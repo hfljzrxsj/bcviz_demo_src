@@ -572,7 +572,7 @@ export default function BCViz_new () {
               dataArrWithPos, graphData, size, resultGraph,
               selectMode, useSetInputST,
               setTab, resultTable, setSize, isEditX,
-              commonValueFromTableData, clickEChartDotToAddMultiDots,
+              commonValueFromTableData, clickEChartDotToAddMultiDots, dataFromST,
             }} /> : <SVGCharts
               {...{
                 commonValueFromTableData, graphData, dataArrWithPos, isEditX, svgRef, svgSize,
