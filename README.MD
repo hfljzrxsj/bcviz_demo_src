@@ -12,10 +12,10 @@ npm -v
 
 如果没有，请到环境变量中配置
 
-# 3. 进入仓库
+# 3. 进入仓库，安装依赖
 
 ```bash
-npm i
+npm i --legacy-peer-deps
 ```
 
 如果执行失败，可以试试以下这2个
@@ -24,14 +24,14 @@ npm i
 
    ```bash
    npm install cnpm -g
-   cnpm i
+   cnpm i --legacy-peer-deps
    ```
 
 2. yarn
 
    ```bash
    npm install yarn -g
-   yarn i
+   yarn i --legacy-peer-deps
    ```
 
 
