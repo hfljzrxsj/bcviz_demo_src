@@ -1,7 +1,8 @@
 # 1. 安装Node.js
-<https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi>
+<https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi>。
 
-注意请允许它设置到环境变量中
+如果下面步骤失败了，就卸载，然后换这个版本的nodeJs：<https://nodejs.org/dist/v18.19.1/node-v18.19.1-x64.msi>。
+注意请允许它设置到环境变量中。
 
 # 2. 在cmd或powershell（Windows自带的命令行工具）查看版本
 
@@ -49,7 +50,7 @@ npm i --legacy-peer-deps
     ```bash
     npm run vite:build
     ```
-打包后目录在dist文件夹
+    打包后目录在dist文件夹
 
 2. 启动生产环境
 

@@ -138,7 +138,7 @@ import { Options } from 'html-minifier-terser';
 // import viteCompress from 'vite-plugin-compress';
 
 // import viteCompression2 from 'vite-plugin-compression2';
-import viteGlsl from 'vite-plugin-glsl';
+// import viteGlsl from 'vite-plugin-glsl';
 // import rollupGzip from 'rollup-plugin-gzip';
 // import viteZipFile from 'vite-plugin-zip-file';
 import viteSvgo from 'vite-plugin-svgo';
@@ -148,7 +148,7 @@ import viteSvgo from 'vite-plugin-svgo';
 
 import viteCompressions from 'vite-plugin-compressions';
 import viteMinipic from 'vite-plugin-minipic';
-import viteImagemin from 'vite-plugin-imagemin';
+// import viteImagemin from 'vite-plugin-imagemin';
 
 // import viteSquoosh from 'vite-plugin-squoosh';
 
@@ -461,12 +461,12 @@ export default defineConfig(({ mode, command }) => {
         //     return !file.includes('.git');
         //   },
         // }),
-        viteGlsl({}),
+        // viteGlsl({}),
         viteSvgo({
           multipass: true
         }),
         viteMinipic({}),
-        viteImagemin({}),
+        // viteImagemin({}),
         // viteImagemin({
         //   plugins: []
         // }),

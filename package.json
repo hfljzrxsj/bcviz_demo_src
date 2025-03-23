@@ -813,5 +813,6 @@
     "@types/yazl": "^2.4.2",
     "@types/zen-observable": "^0.8.3"
   },
-  "overrides": { }
+  "overrides": { },
+  "type": "module"
 }
