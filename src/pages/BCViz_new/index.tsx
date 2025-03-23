@@ -138,6 +138,9 @@ export default function BCViz_new () {
   const [isModalOpen] = useBoolean(false);
   const { tableData: originTableData, setTableData, graphData, setGraphData,
     svgSize, commonValueFromTableData, svgRef, } = useBCVizFnHooks();
+  useUpdateEffect(() => {
+    mutate(undefined);
+  }, [originTableData]);
   const isShowAllSelect = originTableData && originTableData?.length > showAllCount;
   useUpdateEffect(() => {
     if (isShowAllSelect) {
@@ -267,7 +270,7 @@ export default function BCViz_new () {
   }, [tableData, selectEngine]);
   useUpdateEffect(() => {
     setMultiDots([]);
-    mutate(undefined);
+    // mutate(undefined);
   }, [tableData]);
 
 

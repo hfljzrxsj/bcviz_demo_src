@@ -294,6 +294,7 @@ export default function Echarts (props: {
     commonValueFromTableData,
     clickEChartDotToAddMultiDots,
   } = props;
+  const isNotGetResult = isUndefined(size);
   const { dataArrWithPos, visualMapSection, sections } = useMemo(() => {
     if (isEditX) {
       const { datas, visualMapSection, sections } = doubleClickCircleFnForECharts({ ...props });
@@ -476,7 +477,6 @@ export default function Echarts (props: {
   }, [dataArrWithPos]);
   // console.log(3, performance.now() - start);
 
-  const isNotGetResult = isUndefined(size);
   const ResultGraphChartsOption = useMemo(() => {
     if (!isNotGetResult && !resultGraph?.length) {
       const label = inputLabels[selectMode];
