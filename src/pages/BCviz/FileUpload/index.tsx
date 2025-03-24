@@ -331,8 +331,10 @@ export default function FileUpload (props: FileUploadProps) {
 // export { type NullValue };
 
 /* 马上要做的：
-2. （失败）二部图的点坐标重新设计，把getDataArrWithPos和UV合并起来
-3. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）
+1. search result的结果应该从dataArrWithPos过滤有颜色的，这样大数据量图的HSS也能用
+2. 点的大小为(v-min)*(maxRadius-minRadius)/(max-min)+minRadius
+3. 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
+4. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）
 
   */
 // 在别的Modes也要显示size 的直线
@@ -350,9 +352,12 @@ export default function FileUpload (props: FileUploadProps) {
 // useSetInputST交给TabPanelInput自己管理
 // Tooltip移到example时，从indexedb拿文件信息（onOpen时拿）
 // 把BCviz_new所有值全部迁移到useContext
-// search result的结果应该从dataArrWithPos过滤有颜色的，这样大数据量图的HSS也能用
-// 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
 // 没结果时，展示在ECharts里的信息需要展示全部
+// manifest缓存文件（src\pages\BCViz_new\server_conf\manifest.appcache.md）
+
+
+// 失败：
+// 二部图的点坐标重新设计，把getDataArrWithPos和UV合并起来
 
 
 

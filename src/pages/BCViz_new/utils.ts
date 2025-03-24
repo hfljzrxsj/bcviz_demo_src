@@ -40,7 +40,7 @@ export const getFileIdb = <T> (query: NonNullable<IndexedDBGetProps['query']>) =
 // MBE、PQB
 
 export const enum TabKey {
-  all,
+  // all,
   table,
   graph,
   result,
@@ -70,8 +70,8 @@ export const getDataArrWithPosMutilDotsColor = (dataArrWithPos: PosDataObjArr, m
   });
   return dataArrWithPosMutilDotsColor;
 };
-const minRadius = 10;
-const maxRadius = 40;
+const minRadius = 0;
+const maxRadius = 20;
 export const getSymbolSize = (v: number, bool?: unknown) => clamp(bool ? v * 5 : v, minRadius, maxRadius);
 function calculateCirclePositions (radii: OriginDataObjArr, UV?: UVReturnType): ReadonlyArray<number> {
   if (radii.length === 0) return [];

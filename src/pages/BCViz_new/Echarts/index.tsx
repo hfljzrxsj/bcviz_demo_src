@@ -198,7 +198,8 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
             value: v,
             category: k,
             // symbolSize: min(v * 5, 100),
-            symbolSize: getSymbolSize(v, color),
+            ...(isUseForce ? null : { symbolSize: getSymbolSize(v, color), }),
+
             ...(isUseForce ? {} : {
               x: graphX,
               y: graphY

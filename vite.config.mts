@@ -202,8 +202,9 @@ const swSrc = resolve(__dirname, swUrl) ?? fileURLToPath(new URL(swUrl, import.m
 
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+//@ts-expect-error
 export default defineConfig(({ mode, command }) => {
-  const isBuild = mode === 'production' && command === 'build';
+  const isBuild = true && mode === 'production' && command === 'build';
   const isUseCDN = true && isBuild;
 
   const vitePluginCompression: Parameters<typeof viteCompression>[0] = {

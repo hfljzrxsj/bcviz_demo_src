@@ -106,7 +106,7 @@ const ValueToAccordion = ({
     </AccordionDetails>
   </Accordion>;
 };
-export const showAllCount = 20;
+export const showAllCount = 36;
 export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
@@ -247,7 +247,7 @@ export default function BCViz_new () {
       count, numOfData,
       params,
     };
-  }, [dataFromST, selectMode, selectShowItem]);
+  }, [dataFromST, selectMode, selectShowItem, tableData]);
   const isEngineECharts = selectEngine === 'ECharts Engine';
   const isNotGetResult = isUndefined(size);
   const setSize: SetSizeProps['setSize'] = useMemoizedFn((size: execTextType['size']) => {
@@ -334,6 +334,9 @@ export default function BCViz_new () {
       // dataType,
 
     } = eCElementEvent as CallbackDataParams;
+    if (isEditX) {
+      return;
+    }
     if (isSafeInteger(dataIndex) && name && isSafeInteger(value) && typeof value === 'number') {
       const k_click = name[0];
       const kInd_click = parseInt(name.slice(1));
