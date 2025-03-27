@@ -19,7 +19,7 @@ import {
   // FormControlLabel, FormGroup
 } from "@mui/material";
 import { useBoolean, useSafeState, useSetState, useRequest, useLocalStorageState, useMount, useUpdateEffect, useMemoizedFn, useResetState, useEventListener } from "ahooks";
-import { useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode, createContext } from "react";
 import { UVenum, doubleClickCircleFn, doubleClickCircleFnForECharts, getCommonValueFromTableData, getDataArrWithPos, getGroupByDot, isEditXFunc } from "../BCviz/utils";
 import style from './_index.module.scss';
 import style_old from '../BCviz/_index.module.scss';
@@ -32,11 +32,11 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import SideCollapse from "./SideCollapse";
 import Tool from "../BCviz/Tool";
-import TabPanelInput from "./TabPanelInput/TabPanelInput";
+import TabPanelInput, { type UseSetInputST } from "./TabPanelInput/TabPanelInput";
 import { isChina } from "./getIntl";
 import { isDEV, isPROD } from "@/utils/isEnv";
-import { findTopInOrder, getDataArrWithPosForECharts, getDataArrWithPosMutilDotsColor, getDotName, getTableDataWithIndOrFilter, getTooltipTitle, Modes, ModesShortcut, tanContentClass } from "./utils";
-import type { OriginDataObjArr, OriginDataObjWithIndex, OriginDataObjWithIndexArr, PosDataObj, PosDataObjArr, SetSizeProps, SizeProps } from "../BCviz/types";
+import { findTopInOrder, getDataArrWithPosForECharts, getDataArrWithPosMutilDotsColor, getDataArrWithPosWithCommonValueFromTableData, getDotName, getTableDataWithIndOrFilter, getTooltipTitle, Modes, ModesShortcut, tanContentClass } from "./utils";
+import type { HSSProps, OriginDataObjArr, OriginDataObjWithIndex, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetSizeProps, SetStateType, SizeProps } from "../BCviz/types";
 import SVGCharts from "./SVGCharts";
 import useBCVizFnHooks from "../BCviz/hooks";
 import Echarts, { tanColorContentJsx } from "./Echarts";
@@ -51,6 +51,8 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import type { onEChartsParam, onEChartsParamFunc } from "./CommonECharts";
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
+import { parseGraphDataSuper, parseTableData } from "../BCviz/FileUpload";
+import { getSuperDataPromise } from "./mockJs";
 export const uvHighlightColor = 'tan';
 export const clickMultiDotColor = 'red';
 const { isSafeInteger } = Number;
@@ -107,6 +109,33 @@ const ValueToAccordion = ({
   </Accordion>;
 };
 export const showAllCount = 36;
+type BCVizContextType = {
+  readonly graphData: OriginGraphDataReadonlyArr;
+  readonly resultGraph: OriginGraphDataReadonlyArr | undefined;
+  readonly selectMode: Modes;
+  readonly useSetInputST: UseSetInputST;
+  readonly setTab: SetStateType<TabKey>;
+  readonly resultTable: PosDataObjArr | undefined;
+  readonly clickEChartDotToAddMultiDots: onEChartsParamFunc;
+} & HSSProps & SVGChartsProps;
+export const BCVizContext = createContext<BCVizContextType>(
+  {} as BCVizContextType
+  // {
+  // graphData: [],
+  // resultGraph: [],
+  // selectMode: Modes['Maximum Biclique'], useSetInputST: [{
+  //   s: '',
+  //   t: '',
+  // }, () => { }],
+  // setTab: () => { },
+  // resultTable: [],
+  // clickEChartDotToAddMultiDots: () => { },
+  // isEditX: false,
+  // size: undefined,
+  // setSize: () => { },
+  // dataArrWithPos: []
+  // }
+);
 export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
@@ -138,15 +167,28 @@ export default function BCViz_new () {
   const [isModalOpen] = useBoolean(false);
   const { tableData: originTableData, setTableData, graphData, setGraphData,
     svgSize, commonValueFromTableData, svgRef, } = useBCVizFnHooks();
+  const { data: superData, runAsync: getSuperData, mutate: mutateSuperData } = useRequest(getSuperDataPromise, {
+    ...commonUseRequestParams,
+    manual: true,
+  });
   useUpdateEffect(() => {
     mutate(undefined);
+    if (originTableData) {
+      if (originTableData.length > showAllCount) {
+        getSuperData();
+      } else {
+        mutateSuperData(undefined);
+      }
+    }
   }, [originTableData]);
-  const isShowAllSelect = originTableData && originTableData?.length > showAllCount;
+  const isShowAllSelect = false;
+  // || (originTableData && (originTableData.length > showAllCount));
   useUpdateEffect(() => {
     if (isShowAllSelect) {
       toast(`Dataset is too big! Only display top ${showAllCount} vertices.`);
+      setNotShowAll();
     }
-    setNotShowAll();
+
   }, [originTableData]);
   const { svgWidth = 0, svgHeight = 0 } = svgSize;
   const [dataset = '', setdataset] = useLocalStorageState<string>('dataset', {
@@ -181,11 +223,11 @@ export default function BCViz_new () {
   const useMultiDots = useSafeState<OriginDataObjArr | undefined>([]);
 
   const [multiDots, setMultiDots] = useMultiDots;
-  const [isShowAll, { set: setIsShowAll, setTrue: setShowAll, setFalse: setNotShowAll }] = useBoolean(false);
+  const [isShowAll, { set: setIsShowAll, setTrue: setShowAll, setFalse: setNotShowAll }] = useBoolean(true);
 
   const tableData: OriginDataObjWithIndexArr = useMemo(() => getTableDataWithIndOrFilter(isShowAll, originTableData,), [originTableData, isShowAll]);
   const { size,
-    resultGraph, resultTable,
+
     UV, dataThisMode,
     dataArr,
     selectShowData,
@@ -213,31 +255,32 @@ export default function BCViz_new () {
       return { size };
     }
     // const entriesUV = entries(UV);
-    const resultGraph = graphData?.filter((obj) => {
-      // const filRes1 = entries(obj).every(([k, v]) => UV[k as UVenum]?.includes(v));
-      // const filRes2 = entriesUV.every(([k, arr]) => arr.includes(obj[k as UVenum]));
-      const filRes3 = every(obj, (v, k) => {
-        return UV[k as UVenum]?.includes(v) ?? false;
-      });
-      // const filRes4 = every(UV, (arr, k) => {
-      //   return arr?.includes(obj?.[k as UVenum]) ?? false;
-      // });
-      // if (filRes1 !== filRes2 || filRes2 !== filRes3 || filRes3 !== filRes4) {
-      //   debugger;
-      // }
-      return filRes3;
-      // return u?.includes(obj.u) && v?.includes(obj.v);
-    });
+    // const resultGraph = graphData?.filter((obj) => {
+    //   // const filRes1 = entries(obj).every(([k, v]) => UV[k as UVenum]?.includes(v));
+    //   // const filRes2 = entriesUV.every(([k, arr]) => arr.includes(obj[k as UVenum]));
+    //   const filRes3 = every(obj, (v, k) => {
+    //     return UV[k as UVenum]?.includes(v) ?? false;
+    //   });
+    //   // const filRes4 = every(UV, (arr, k) => {
+    //   //   return arr?.includes(obj?.[k as UVenum]) ?? false;
+    //   // });
+    //   // if (filRes1 !== filRes2 || filRes2 !== filRes3 || filRes3 !== filRes4) {
+    //   //   debugger;
+    //   // }
+    //   return filRes3;
+    //   // return u?.includes(obj.u) && v?.includes(obj.v);
+    // });
 
-    const filterTableData = tableData?.filter(({ k, kInd }) => {
-      return UV[k]?.includes(kInd);
-    });
-    const filterTableDataWithIndOrFilter = getTableDataWithIndOrFilter(isShowAll, filterTableData,);
-    const resultTable = getDataArrWithPos(filterTableDataWithIndOrFilter, resultGraph, getCommonValueFromTableData(filterTableDataWithIndOrFilter, {
-      svgWidth, svgHeight,
-    }), svgHeight);
+    // const filterTableData = tableData?.filter(({ k, kInd }) => {
+    //   return UV[k]?.includes(kInd);
+    // });
+    // const filterTableDataWithIndOrFilter = getTableDataWithIndOrFilter(isShowAll, filterTableData,);
+    // const resultTable = getDataArrWithPos(filterTableDataWithIndOrFilter, resultGraph, getCommonValueFromTableData(filterTableDataWithIndOrFilter, {
+    //   svgWidth, svgHeight,
+    // }), svgHeight);
     return {
-      size, resultGraph, resultTable,
+      size,
+      // resultGraph, resultTable,
       // u, v,
       UV,
       // label,
@@ -273,8 +316,6 @@ export default function BCViz_new () {
     // mutate(undefined);
   }, [tableData]);
 
-
-
   const dataArrWithPos = useMemo(() => {
     // setTrue();
     // const getDataArrWithPosParams: Parameters<typeof getDataArrWithPos> = [tableDataWithIndOrFilter, graphData, commonValueFromTableData, svgHeight];
@@ -307,6 +348,33 @@ export default function BCViz_new () {
     size,
     multiDots,
   ]);
+  const { resultGraph, resultTable, } = useMemo(() => {
+    if (!UV) {
+      return {};
+    }
+    const resultGraph = graphData.
+      filter((obj) => {
+        return every(obj, (v, k) => {
+          return UV[k as UVenum]?.includes(v) ?? false;
+        });
+      });
+    const filterTableData = (isEditX) ? dataArrWithPos.filter(({ color }) => color) : tableData.filter(({ k, kInd }) => {
+      return UV[k]?.includes(kInd);
+    });
+    // console.log(filterTableData);
+
+    const filterTableDataWithIndOrFilter = getTableDataWithIndOrFilter(isShowAll, filterTableData,);
+    // const resultTable = getDataArrWithPos(filterTableDataWithIndOrFilter, resultGraph, getCommonValueFromTableData(filterTableDataWithIndOrFilter, {
+    //   svgWidth, svgHeight,
+    // }), svgHeight);
+    const resultTable = getDataArrWithPosWithCommonValueFromTableData(filterTableDataWithIndOrFilter, resultGraph, {
+      svgWidth, svgHeight,
+    });
+    return {
+      resultGraph, resultTable,
+    };
+
+  }, [UV, graphData, tableData]);
 
   const setTabToResult = useMemoizedFn(() => {
     if (!isNotGetResult) {
@@ -366,6 +434,7 @@ export default function BCViz_new () {
   });
   return (
     <>
+      {/* <BCVizContext.Provider value={{}}> */}
       <Paper className={style['Main'] ?? ''} elevation={24}
       // ref={ref}
       // onClick={() => {
@@ -399,6 +468,7 @@ export default function BCViz_new () {
                   <MenuItem value={1} key={1}
                   >Show All</MenuItem>
                   <MenuItem value={0} key={0}
+                    title={`Top ${showAllCount} in descending order of Cohesion`}
                   >Only Show {showAllCount}</MenuItem>
                 </Select>
               </FormControl>
@@ -557,7 +627,9 @@ export default function BCViz_new () {
                     : null}
                 // placement="right"
                 >
-                  <Tab label="Search Result" value={TabKey.result} disabled={isNotGetResult || isEditX} className={
+                  <Tab label="Search Result" value={TabKey.result} disabled={isNotGetResult
+                    || isEditX
+                  } className={
                     clsx({ [style['Tab'] ?? '']: !isNotGetResult })
                     // style['Tab'] ?? ''
                   } />
@@ -579,6 +651,7 @@ export default function BCViz_new () {
               selectMode, useSetInputST,
               setTab, resultTable, setSize, isEditX,
               commonValueFromTableData, clickEChartDotToAddMultiDots, dataFromST,
+              superData,
             }} /> : <SVGCharts
               {...{
                 commonValueFromTableData, graphData, dataArrWithPos, isEditX, svgRef, svgSize,
@@ -637,5 +710,6 @@ export default function BCViz_new () {
       </Paper>
       <Modal open={isModalOpen || loading} className={style['Modal'] ?? ''}><CircularProgress className={style['CircularProgress'] ?? ''} /></Modal>
       <ToastContainer />
+      {/* </BCVizContext.Provider> */}
     </>);
 }

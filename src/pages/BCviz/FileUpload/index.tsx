@@ -8,7 +8,7 @@ import { type SetState } from 'ahooks/lib/createUseStorageState';
 import FileUploadSimple, { fetchData } from "../FileUploadSimple";
 import classNames from "clsx";
 import { unstable_batchedUpdates } from "react-dom";
-import type { OriginDataObj, OriginDataObjArr, OriginGraphDataReadonlyArr, OriginGraphDataArr } from "../types";
+import type { OriginDataObj, OriginDataObjArr, OriginGraphDataReadonlyArr, OriginGraphDataArr, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr } from "../types";
 import { useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 import { uniq } from "lodash";
@@ -37,7 +37,7 @@ export type UVtype = typeof UV;
 export type UVtypeKey = keyof UVtype;
 // 0 1 6
 export type parseData<T> = (str: string) => T;
-const parseTableData = ((str) => {
+export const parseTableData = ((str) => {
   const arr = str.trim().split('\n');
   const result: OriginDataObj[] = [];
   for (const i of arr) {
@@ -55,23 +55,48 @@ const parseTableData = ((str) => {
   }
   return result;
 }) as parseData<OriginDataObjArr>;
-const parseGraphData: parseData<OriginGraphDataReadonlyArr> = ((str) => {
+const parseGraphDataSingle = (i: string, result: OriginGraphDataArr) => {
+  const [uStr, vStr] = i.trim().split(/[ \t]/) as [string, string];
+  const u = parseInt(uStr);
+  const v = parseInt(vStr);
+  if (!isSafeInteger(u) || !isSafeInteger(v)) {
+    return;
+  }
+  result.push({
+    [UVenum.U]: u,
+    [UVenum.V]: v,
+  });
+};
+const parseGraphDataSuperSingle = (i: string, result: OriginGraphDataSuperArr) => {
+  const [uStr, vStr, superWidthStr] = i.trim().split(/[ \t]/) as [string, string, string];
+  const u = parseInt(uStr);
+  const v = parseInt(vStr);
+  const superWidth = parseInt(superWidthStr);
+  if (!isSafeInteger(u) || !isSafeInteger(v)) {
+    return;
+  }
+  result.push({
+    [UVenum.U]: u,
+    [UVenum.V]: v,
+    superWidth,
+  });
+};
+const parseGraphData: parseData<OriginGraphDataReadonlyArr> = ((str, parseFunc = parseGraphDataSingle) => {
   const arr = str.trim().split('\n');
-  const result: OriginGraphDataArr = [];
+  const result: OriginGraphDataSuperArr = [];
   for (const i of arr) {
-    const [uStr, vStr] = i.trim().split(/[ \t]/) as [string, string];
-    const u = parseInt(uStr);
-    const v = parseInt(vStr);
-    if (!isSafeInteger(u) || !isSafeInteger(v)) {
-      return [];
-    }
-    result.push({
-      [UVenum.U]: u,
-      [UVenum.V]: v,
-    });
+    parseFunc(i, result);
   }
   return result;
 }) as parseData<OriginGraphDataReadonlyArr>;
+export const parseGraphDataSuper: parseData<OriginGraphDataSuperReadonlyArr> = ((str, parseFunc = parseGraphDataSuperSingle) => {
+  const arr = str.trim().split('\n');
+  const result: OriginGraphDataArr = [];
+  for (const i of arr) {
+    parseFunc(i, result);
+  }
+  return result;
+}) as parseData<OriginGraphDataSuperReadonlyArr>;
 // export type FileInfoType = Partial<typeof initFileInfo>;
 type JSON_OBJ = Record<string, number | string>;
 export type JSON_ARR = ReadonlyArray<JSON_OBJ>;
@@ -334,7 +359,7 @@ export default function FileUpload (props: FileUploadProps) {
 1. search result的结果应该从dataArrWithPos过滤有颜色的，这样大数据量图的HSS也能用
 2. 点的大小为(v-min)*(maxRadius-minRadius)/(max-min)+minRadius
 3. 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
-4. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）
+4. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）。每次更改Select，需要事件循环末期dispatchEvent resize
 
   */
 // 在别的Modes也要显示size 的直线

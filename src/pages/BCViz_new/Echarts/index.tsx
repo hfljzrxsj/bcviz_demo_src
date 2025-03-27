@@ -1,10 +1,10 @@
 import { useMemo, type ReactNode } from "react";
-import type { DataArrWithPos, HSSProps, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetStateType, getCommonValueFromTableDataReturnType } from "@/pages/BCviz/types";
-import { UVenum, clickToSetSize, doubleClickCircleFnForECharts, getGraphLinkColor, isEditXFunc } from "@/pages/BCviz/utils";
-import { TabKey, getDotName, getSymbolSize, tanContentClass } from "../utils";
+import type { DataArrWithPos, HSSProps, OriginGraphDataReadonlyArr, OriginGraphDataSuper, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetStateType, getCommonValueFromTableDataReturnType } from "@/pages/BCviz/types";
+import { UVenum, clickToSetSize, doubleClickCircleFnForECharts, getCommonValueFromTableData, getDataArrWithPos, getGraphLinkColor, isEditXFunc } from "@/pages/BCviz/utils";
+import { TabKey, getDataArrWithPosWithCommonValueFromTableData, getDotName, getFileIdb, getSymbolSize, maxRadius, minRadius, svgWH, tanContentClass } from "../utils";
 import CommonCharts, { type AxisPointerComponentOption, type EChartsOption, type GraphSeriesOption, type LineSeriesOption, type MarkAreaComponentOption, type TooltipComponentOption, type onEChartsParam, type onEChartsParamFunc } from "../CommonECharts";
 import { freeze } from "immer";
-import { clamp, debounce, head, isUndefined, last, map } from "lodash";
+import { clamp, debounce, head, isUndefined, last, map, uniq } from "lodash";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Modes } from "../utils";
 import type { InputSTSetState } from "../InputST";
@@ -26,7 +26,15 @@ import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
 import ListItemText from '@mui/material/ListItemText';
 import style from './_index.module.scss';
+import { showAllCount } from "..";
+//@ts-expect-error
+import echartsGlobalDefault from 'echarts/lib/model/globalDefault';
+
+const echartsColors: ReadonlyArray<string> = echartsGlobalDefault.color;
+
+import type { SuperDataType } from "../mockJs";
 const { isSafeInteger } = Number;
+const { min, max } = Math;
 
 const isUseForce = false;
 
@@ -36,6 +44,14 @@ export const tanColorContentJsx = ([k, v]: tanColorContentJsxParam) => (<div key
   <span className={tanContentClass}>{v?.toString()}</span>
 </div>
 );
+const silceArrNum = 4;
+
+const silceArr = <T,> (arr: ReadonlyArray<T>, num: number) => {
+  if (arr.length > num) {
+    return arr.slice(0, num);
+  }
+  return arr;
+};
 
 export const getTitle2Jsx = ({ k, kInd, v, neighbor, color }: PosDataObj, mode?: Modes) => {
 
@@ -51,9 +67,9 @@ export const getTitle2Jsx = ({ k, kInd, v, neighbor, color }: PosDataObj, mode?:
     {
       ([['Vertex Name', `${k + kInd}`],
       ['Maximum Cohesion', `${v}`],
-      ['Neighbors', `${neighbor?.map(({ k, kInd }) => `${k + kInd}`).join(', ')}`],
+      (isUndefined(neighbor) ? undefined : ['Neighbors', `${silceArr(neighbor, silceArrNum).map(({ k, kInd }) => `${k + kInd}`).join(', ')}${neighbor.length > silceArrNum ? '...' : ''}`]),
       ['Vertex Degree', `${neighbor?.length}`,],
-      ] as ReadonlyArray<tanColorContentJsxParam>).map(tanColorContentJsx)
+      ] as ReadonlyArray<tanColorContentJsxParam>).filter(Boolean).map(tanColorContentJsx)
     }
   </>);
 };
@@ -111,9 +127,10 @@ const commonAxisPointerOption: AxisPointerComponentOption = freeze({
 const commonEmphasisOption: (GraphSeriesOption
   & LineSeriesOption)['emphasis'] = ({
     lineStyle: {
-      width: 4,
-      shadowColor: 'rgba(0,0,0,.3)',
+      // width: 4,
+      shadowColor: 'rgba(0,0,0,.5)',
       shadowBlur: 10,
+      // color:'red',
     },
     scale: true,
     label: {
@@ -130,11 +147,32 @@ const commonEmphasisOption: (GraphSeriesOption
       // shadowOffsetY: 8
     }
   });
-const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: OriginGraphDataReadonlyArr | undefined, mode?: Modes, size: execTextType['size'] = undefined): EChartsOption => {
+const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: OriginGraphDataSuperReadonlyArr | undefined, mode?: Modes, size: execTextType['size'] = undefined, { max: maxV, min: minV } = getCommonValueFromTableData(dataArrWithPos, svgWH)): EChartsOption => {
   if (!dataArrWithPos || !graphData) {
     return {};
   }
   const graphLinkColor = getGraphLinkColor(dataArrWithPos, graphData);
+  const symbolSizeBase = (maxRadius - minRadius) / (maxV - minV);
+  console.log(symbolSizeBase, minRadius, maxV, minV);
+
+  const getSymbolSize = (v: number) => (v - minV) * symbolSizeBase + minRadius;
+  const superWidthArr = uniq(graphData.map(({ superWidth }) => superWidth));
+  const getLineStyleWidth = (() => {
+    if (isUndefined(head(superWidthArr))) {
+      return (e: number) => e;
+    } else {
+      const arr = superWidthArr as ReadonlyArray<number>;
+      const minWidth = min(...arr);
+      const maxWidth = max(...arr);
+      const maxRadius = 10;
+      const minRadius = 1;
+      const superWidthBase = (maxRadius - minRadius) / (maxWidth - minWidth);
+      const getLineStyleWidth = (width: number) => (width - minWidth) * superWidthBase + minRadius;
+      return getLineStyleWidth;
+    }
+  })();
+
+
   const option = ({
     ...commonEChartsOption,
     tooltip: {
@@ -152,11 +190,13 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
         ...commonSeriesOption,
         tooltip: {
           ...commonTooltipOption,
-          formatter (obj, backupStr) {
-            const { dataType, dataIndex, data } = obj;
+          formatter (obj, backupStr, cb) {
+            const { dataType, dataIndex, data, name } = obj;
+
             if (dataType === 'edge') {
               //@ts-expect-error
-              return data['source'] + '<br/>' + data['target'];
+              const { source, target, superWidth } = data;
+              return [name, superWidth].filter(Boolean).join('<br/>');
             }
             // if ('dataIndex' in obj) {
             const posObj = dataArrWithPos[dataIndex];
@@ -193,12 +233,15 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
         },
         data: dataArrWithPos.map((dotData) => {
           const { k, kInd, graphX, graphY, v, color } = dotData;
+          const symbolSize = getSymbolSize(v);
           return ({
             name: getDotName(dotData),
             value: v,
             category: k,
-            // symbolSize: min(v * 5, 100),
-            ...(isUseForce ? null : { symbolSize: getSymbolSize(v, color), }),
+            ...(isUseForce ? null : {
+              symbolSize,
+              // getSymbolSize(v, color),
+            }),
 
             ...(isUseForce ? {} : {
               x: graphX,
@@ -215,25 +258,52 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
           }) as NonNullable<GraphSeriesOption['data']>[number];
         }),
         // links: [],
-        links: graphData?.map(({ u, v }, ind) => {
+        links: graphData?.map(({ u, v, superWidth }, ind) => {
           const color = graphLinkColor[ind];
-          return {
+          return ({
             source: `u${u}`,
             target: `v${v}`,
-            // graphLinkColor[ind]
-            ...(color ? {
-              lineStyle: {
+            lineStyle: {
+              ...(isUndefined(superWidth) ? null : {
+                width: getLineStyleWidth(superWidth),
+              }),
+
+              color: {
+                type: 'linear',
+                x: 0,
+                y: 0,
+                x2: 0,
+                y2: 1,
+                colorStops: [{
+                  offset: 0, color: echartsColors[0] // 0% 处的颜色
+                }, {
+                  offset: 1, color: echartsColors[1] // 100% 处的颜色
+                }],
+                global: false // 缺省为 false
+              },
+              ...(color ? {
                 color: graphLinkColor[ind],
                 width: 4,
-              }
-            } : null)
-          };
+              } : null)
+            },
+            // graphLinkColor[ind]
+            superWidth,
+          } as NonNullable<GraphSeriesOption['links']>[number]);
         }) as GraphSeriesOption['links'],
         lineStyle: {
+          // width:1,
           // color: 'source',
           // curveness: 0.3,
           opacity: 1,
+          cap: 'round',
+          join: 'round',
+          shadowColor: 'rgba(0,0,0,.3)',
+          shadowBlur: 5,
           // color: "#000"
+        },
+        itemStyle: {
+          shadowColor: 'rgba(0,0,0,.3)',
+          shadowBlur: 5,
         },
         emphasis: {
           focus: 'adjacency',
@@ -287,6 +357,7 @@ export default function Echarts (props: {
   readonly setTab: SetStateType<TabKey>;
   readonly resultTable: PosDataObjArr | undefined;
   readonly clickEChartDotToAddMultiDots: onEChartsParamFunc;
+  readonly superData?: SuperDataType | undefined;
 } & HSSProps & SVGChartsProps) {
   const { dataArrWithPos: dataArrWithPosNotWithColor, graphData, size, resultGraph,
     selectMode, useSetInputST,
@@ -294,6 +365,7 @@ export default function Echarts (props: {
     setSize, isEditX,
     commonValueFromTableData,
     clickEChartDotToAddMultiDots,
+    superData,
   } = props;
   const isNotGetResult = isUndefined(size);
   const { dataArrWithPos, visualMapSection, sections } = useMemo(() => {
@@ -472,10 +544,20 @@ export default function Echarts (props: {
     if (!dataArrWithPos) {
       return;
     }
-    const option = getGraphOption(dataArrWithPos, graphData, selectMode);
+
+    if (superData) {
+      const { tableData, graphData } = superData;
+      if (tableData && graphData) {
+        const commonValueFromTableData = getCommonValueFromTableData(tableData, svgWH);
+        const dataArrWithPos = getDataArrWithPos(tableData, graphData, commonValueFromTableData, innerHeight);
+        // const dataArrWithPos = getDataArrWithPosWithCommonValueFromTableData(tableData, graphData, svgWH);
+        return getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData);
+      }
+    }
+    const option = getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData);
 
     return option;
-  }, [dataArrWithPos]);
+  }, [dataArrWithPos, superData]);
   // console.log(3, performance.now() - start);
 
   const ResultGraphChartsOption = useMemo(() => {

@@ -27,7 +27,14 @@ export interface PosDataObj extends OriginDataObjWithIndex {
 export type OriginDataObjArr = ReadonlyArray<OriginDataObj>;
 export type typeOfGetCommonValueFromTableData = typeof getCommonValueFromTableData;
 export type getCommonValueFromTableDataReturnType = ReturnType<typeOfGetCommonValueFromTableData>;
-export type OriginGraphDataArr = Record<UVenum, OriginDataObj['kInd']>[];
+export type getCommonValueFromTableDataParamers = Parameters<typeOfGetCommonValueFromTableData>;
+type OriginGraphData = Record<UVenum, OriginDataObj['kInd']>;
+export type OriginGraphDataSuper = OriginGraphData & {
+  readonly superWidth?: number;
+};
+export type OriginGraphDataSuperArr = Array<OriginGraphDataSuper>;
+export type OriginGraphDataSuperReadonlyArr = ReadonlyArray<OriginGraphDataSuper>;
+export type OriginGraphDataArr = (Record<UVenum, OriginDataObj['kInd']>)[];
 export type OriginGraphDataReadonlyArr = Readonly<OriginGraphDataArr>;
 export type kInd = OriginDataObj['kInd'];
 type indexNeighbor = Record<kInd, dotNeighbor>;

@@ -3,8 +3,8 @@ import { isPROD } from "@/utils/isEnv";
 import { clamp, groupBy, head, isPlainObject, isUndefined, mapValues, orderBy, sortBy } from "lodash";
 import type { execTextType, UVReturnType } from "./api";
 import { tanColorContentJsx } from "./Echarts";
-import type { getCommonValueFromTableDataReturnType, GraphNeighbor, OriginDataObj, OriginDataObjArr, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, typeOfGetCommonValueFromTableData } from "../BCviz/types";
-import { getGraphNeighbor, getGroupByDot, getInitGraphNeighbor, getOneDotNeighbor, marginSize, UVenum, uvIndObj, uvLength } from "../BCviz/utils";
+import type { getCommonValueFromTableDataParamers, getCommonValueFromTableDataReturnType, GraphNeighbor, OriginDataObj, OriginDataObjArr, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, typeOfGetCommonValueFromTableData } from "../BCviz/types";
+import { getCommonValueFromTableData, getDataArrWithPos, getGraphNeighbor, getGroupByDot, getInitGraphNeighbor, getOneDotNeighbor, marginSize, UVenum, uvIndObj, uvLength, type getDataArrWithPosParameters, type getDataArrWithPosType } from "../BCviz/utils";
 import { clickMultiDotColor, showAllCount } from ".";
 
 const { freeze, entries, values } = Object;
@@ -70,8 +70,8 @@ export const getDataArrWithPosMutilDotsColor = (dataArrWithPos: PosDataObjArr, m
   });
   return dataArrWithPosMutilDotsColor;
 };
-const minRadius = 0;
-const maxRadius = 20;
+export const minRadius = 40;
+export const maxRadius = 80;
 export const getSymbolSize = (v: number, bool?: unknown) => clamp(bool ? v * 5 : v, minRadius, maxRadius);
 function calculateCirclePositions (radii: OriginDataObjArr, UV?: UVReturnType): ReadonlyArray<number> {
   if (radii.length === 0) return [];
@@ -88,13 +88,13 @@ function calculateCirclePositions (radii: OriginDataObjArr, UV?: UVReturnType): 
     if (isUndefined(prevPosition) || isUndefined(prevRadius) || isUndefined(currentRadius)) {
       return [];
     }
-    positions.push(prevPosition + prevRadius + maxRadius * 5 + currentRadius);
+    positions.push(prevPosition + prevRadius + maxRadius + currentRadius);
   }
 
   return positions;
 }
-export const getDataArrWithPosForECharts = (tableData: Parameters<typeOfGetCommonValueFromTableData>[0], graphData: OriginGraphDataReadonlyArr | undefined, { xRadix, getYPos, svgWidth }: getCommonValueFromTableDataReturnType,
-  graphSvgHeght: number,
+export const getDataArrWithPosForECharts: getDataArrWithPosType = (tableData, graphData, { xRadix, getYPos, svgWidth },
+  graphSvgHeght,
 ) => {
   if (!graphData || !tableData) {
     return [];
@@ -151,3 +151,22 @@ export const getTableDataWithIndOrFilter = ((isShowAll: boolean, tableData?: Ori
   return findTopInOrder(tableDataWithInd);
 });
 // export const isNotEmptyArr = (arr: ReadonlyArray<unknown> | undefined) => !isUndefined(arr) && Array.isArray(arr) && arr.length > 0;
+
+export const getDataArrWithPosWithCommonValueFromTableData = (tableData: getDataArrWithPosParameters[0], graghData: getDataArrWithPosParameters[1], {
+  svgWidth, svgHeight,
+}: Pick<getCommonValueFromTableDataReturnType, 'svgWidth' | 'svgHeight'>) => {
+  return getDataArrWithPos(tableData, graghData, getCommonValueFromTableData(tableData, {
+    svgWidth, svgHeight,
+  }), svgHeight);
+};
+export const getDataArrWithPosWithCommonValueFromTableDataForECharts = (tableData: getDataArrWithPosParameters[0], graghData: getDataArrWithPosParameters[1], {
+  svgWidth, svgHeight,
+}: Pick<getCommonValueFromTableDataReturnType, 'svgWidth' | 'svgHeight'>) => {
+  return getDataArrWithPosForECharts(tableData, graghData, getCommonValueFromTableData(tableData, {
+    svgWidth, svgHeight,
+  }), svgHeight);
+};
+export const svgWH = freeze({
+  svgHeight: innerHeight,
+  svgWidth: innerWidth
+});

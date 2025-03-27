@@ -4,7 +4,7 @@ import { colors_ } from './colors';
 import {
   type TooltipProps,
 } from "@mui/material";
-import type { OriginDataObj, OriginDataObjArr, OriginGraphDataReadonlyArr, PosDataObj, dotNeighbor, indexNeighbor, typeOfGetCommonValueFromTableData, kInd, GraphNeighbor as GraphNeighbor, drawLineData, PosDataObjArr, pos, getCommonValueFromTableDataReturnType, LineSVGProps, CommonSVGProps, ClickCircleProps, SizeProps, SizeAndSetProps } from './types';
+import type { OriginDataObj, OriginDataObjArr, OriginGraphDataReadonlyArr, PosDataObj, dotNeighbor, indexNeighbor, typeOfGetCommonValueFromTableData, kInd, GraphNeighbor as GraphNeighbor, drawLineData, PosDataObjArr, pos, getCommonValueFromTableDataReturnType, LineSVGProps, CommonSVGProps, ClickCircleProps, SizeProps, SizeAndSetProps, getCommonValueFromTableDataParamers } from './types';
 import classNames from "clsx";
 import style from './_index.module.scss';
 import { getTitle2Jsx } from '../BCViz_new/Echarts';
@@ -80,7 +80,7 @@ export const getGraphNeighbor = (graphData: OriginGraphDataReadonlyArr) => {
   }
   return graphNeighbor;
 };
-export const getDataArrWithPos = (tableData: Parameters<typeOfGetCommonValueFromTableData>[0], graphData: OriginGraphDataReadonlyArr | undefined, { xRadix, getYPos, svgWidth }: getCommonValueFromTableDataReturnType,
+export const getDataArrWithPos = (tableData: getCommonValueFromTableDataParamers[0], graphData: OriginGraphDataReadonlyArr | undefined, { xRadix, getYPos, svgWidth, max, min }: getCommonValueFromTableDataReturnType,
   graphSvgHeght: number,
 ) => {
   if (!graphData || !tableData) {
@@ -191,6 +191,9 @@ export const getDataArrWithPos = (tableData: Parameters<typeOfGetCommonValueFrom
 
   return dataArrWithPos;
 };
+export type getDataArrWithPosType = typeof getDataArrWithPos;
+export type getDataArrWithPosParameters = Parameters<getDataArrWithPosType>;
+export type getDataArrWithPosReturnType = ReturnType<getDataArrWithPosType>;
 const highlightLevelArr = freeze(['more-highlight', 'highlight', 'no-highlight']);
 const baseHighlightLevel = last(highlightLevelArr) ?? '';
 const highlightLevelKeyArr = highlightLevelArr.map(i => camelCase(`is-${i}`)) as ReadonlyArray<keyof PosDataObj>;
