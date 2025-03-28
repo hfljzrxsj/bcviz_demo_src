@@ -153,7 +153,7 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
   }
   const graphLinkColor = getGraphLinkColor(dataArrWithPos, graphData);
   const symbolSizeBase = (maxRadius - minRadius) / (maxV - minV);
-  console.log(symbolSizeBase, minRadius, maxV, minV);
+  // console.log(symbolSizeBase, minRadius, maxV, minV);
 
   const getSymbolSize = (v: number) => (v - minV) * symbolSizeBase + minRadius;
   const superWidthArr = uniq(graphData.map(({ superWidth }) => superWidth));
@@ -308,7 +308,10 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
         emphasis: {
           focus: 'adjacency',
           ...commonEmphasisOption,
-        }
+        },
+        // label: {
+        //   show: dataArrWithPos.length < showAllCount,
+        // }
       }
     ],
   } as EChartsOption);

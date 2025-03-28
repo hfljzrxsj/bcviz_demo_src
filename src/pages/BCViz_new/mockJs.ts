@@ -12,7 +12,7 @@ V: 2 3`;
 export const getSuperDataPromise = () => Promise.all([
   fetch('writer.supervertex'),
   fetch('writer.superedge'),
-]).then(res => res.map(i => i.text())).then(arr => Promise.all(arr)).then(([tableData, graghData]) => {
+]).then(res => res.map(i => i.text())).then(arr => Promise.all(arr)).then(async ([tableData, graghData]) => {
   if (!tableData || !graghData) {
     return {};
   }

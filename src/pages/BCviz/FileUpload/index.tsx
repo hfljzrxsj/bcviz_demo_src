@@ -356,8 +356,6 @@ export default function FileUpload (props: FileUploadProps) {
 // export { type NullValue };
 
 /* 马上要做的：
-1. search result的结果应该从dataArrWithPos过滤有颜色的，这样大数据量图的HSS也能用
-2. 点的大小为(v-min)*(maxRadius-minRadius)/(max-min)+minRadius
 3. 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
 4. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）。每次更改Select，需要事件循环末期dispatchEvent resize
 
@@ -379,6 +377,7 @@ export default function FileUpload (props: FileUploadProps) {
 // 把BCviz_new所有值全部迁移到useContext
 // 没结果时，展示在ECharts里的信息需要展示全部
 // manifest缓存文件（src\pages\BCViz_new\server_conf\manifest.appcache.md）
+// 解析TXT文件、解析查询结果、解析超图->webworker（src\pages\BCViz_new\webWorker.md）
 
 
 // 失败：

@@ -212,8 +212,8 @@ export default function BCViz_new () {
   });
   const [tab, setTab] = useSafeState(TabKey.table);
   const [selectMode, setSelectMode, resetSelectMode] = useResetState(
-    // isDEV ? Modes['Hierarchical Subgraphs Search'] :
-    Modes['Maximum Biclique']);
+    isDEV ? Modes['Hierarchical Subgraphs Search'] :
+      Modes['Maximum Biclique']);
   const [selectEngine, setSelectEngine] = useSafeState<keyofRenderingEngine>(
     // isDEV ? 'SVG Engine' :
     'ECharts Engine');
@@ -316,7 +316,7 @@ export default function BCViz_new () {
     // mutate(undefined);
   }, [tableData]);
 
-  const dataArrWithPos = useMemo(() => {
+  const { dataArrWithPos, visualMapSection } = useMemo(() => {
     // setTrue();
     // const getDataArrWithPosParams: Parameters<typeof getDataArrWithPos> = [tableDataWithIndOrFilter, graphData, commonValueFromTableData, svgHeight];
 
@@ -325,7 +325,8 @@ export default function BCViz_new () {
     if (isEditX) {
       // return doubleClickCircleFn({ isEditX, dataArrWithPos, commonValueFromTableData, size, setSize });
       // return doubleClickCircleFnForECharts({ isEditX, dataArrWithPos, commonValueFromTableData, size }).datas;
-      return dataArrWithPos;
+      const { datas, visualMapSection } = doubleClickCircleFnForECharts({ isEditX, dataArrWithPos, size, commonValueFromTableData });
+      return { dataArrWithPos: datas, visualMapSection };
     }
 
     // if (!UV) {
@@ -340,7 +341,7 @@ export default function BCViz_new () {
       }) as PosDataObj;
     }) : dataArrWithPos;
     const dataArrWithPosAndMutilDotsColor: PosDataObjArr = getDataArrWithPosMutilDotsColor(dataArrWithPosAndUVColor, multiDots);
-    return dataArrWithPosAndMutilDotsColor;
+    return { dataArrWithPos: dataArrWithPosAndMutilDotsColor };
   }, [
     commonValueFromTableData,
     UV,
@@ -349,19 +350,32 @@ export default function BCViz_new () {
     multiDots,
   ]);
   const { resultGraph, resultTable, } = useMemo(() => {
-    if (!UV) {
-      return {};
-    }
-    const resultGraph = graphData.
-      filter((obj) => {
-        return every(obj, (v, k) => {
-          return UV[k as UVenum]?.includes(v) ?? false;
+    const { resultGraph, filterTableData } = (() => {
+      if (isEditX || !UV) {
+        const filterTableData = dataArrWithPos.filter(({ color }) => color);
+        const groupByDot = getGroupByDot(filterTableData);
+        const resultGraph = graphData.
+          filter((obj) => {
+            return every(obj, (v, k) => {
+              return Boolean(groupByDot[k as UVenum][v]);
+            });
+          });
+        return { resultGraph, filterTableData };
+      }
+      const resultGraph = graphData.
+        filter((obj) => {
+          return every(obj, (v, k) => {
+            return UV[k as UVenum]?.includes(v) ?? false;
+          });
         });
+      const filterTableData = tableData.filter(({ k, kInd }) => {
+        return UV[k]?.includes(kInd);
       });
-    const filterTableData = (isEditX) ? dataArrWithPos.filter(({ color }) => color) : tableData.filter(({ k, kInd }) => {
-      return UV[k]?.includes(kInd);
-    });
-    // console.log(filterTableData);
+      return { resultGraph, filterTableData };
+    })();
+    // if (!UV) {
+    //   return {};
+    // }
 
     const filterTableDataWithIndOrFilter = getTableDataWithIndOrFilter(isShowAll, filterTableData,);
     // const resultTable = getDataArrWithPos(filterTableDataWithIndOrFilter, resultGraph, getCommonValueFromTableData(filterTableDataWithIndOrFilter, {
@@ -374,8 +388,7 @@ export default function BCViz_new () {
       resultGraph, resultTable,
     };
 
-  }, [UV, graphData, tableData]);
-
+  }, [UV, graphData, tableData, isEditX, dataArrWithPos]);
   const setTabToResult = useMemoizedFn(() => {
     if (!isNotGetResult) {
       // setTab(TabKey.result);
@@ -628,7 +641,7 @@ export default function BCViz_new () {
                 // placement="right"
                 >
                   <Tab label="Search Result" value={TabKey.result} disabled={isNotGetResult
-                    || isEditX
+                    // || isEditX
                   } className={
                     clsx({ [style['Tab'] ?? '']: !isNotGetResult })
                     // style['Tab'] ?? ''

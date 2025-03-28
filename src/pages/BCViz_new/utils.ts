@@ -141,11 +141,14 @@ export const getTableDataWithIndOrFilter = ((isShowAll: boolean, tableData?: Ori
   if (!tableData) {
     return [];
   }
+  if (isShowAll) {
+    return tableData as OriginDataObjWithIndexArr;
+  }
   const tableDataWithInd: OriginDataObjWithIndexArr = tableData.map((item, i) => ({
     ...item,
     i,
   }));
-  if (isShowAll || tableData.length <= showAllCount) {
+  if (tableData.length <= showAllCount) {
     return tableDataWithInd;
   }
   return findTopInOrder(tableDataWithInd);
