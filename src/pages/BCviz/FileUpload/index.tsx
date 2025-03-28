@@ -358,6 +358,7 @@ export default function FileUpload (props: FileUploadProps) {
 /* 马上要做的：
 3. 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
 4. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）。每次更改Select，需要事件循环末期dispatchEvent resize
+5. HSS用AutoComplete分组显示（all(-1)、1、2、3...），src\pages\BCViz_new\Echarts\index.tsx的visualMapSection不需要重新计算，从外面传入即可
 
   */
 // 在别的Modes也要显示size 的直线

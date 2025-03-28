@@ -73,7 +73,29 @@ export const getTitle2Jsx = ({ k, kInd, v, neighbor, color }: PosDataObj, mode?:
     }
   </>);
 };
+export const getTitle2JsxForSuper = ({ k, kInd, v, neighbor, color }: PosDataObj, mode?: Modes) => {
+
+  return (<>
+    {
+      (color && mode && !isEditXFunc(mode)) ? <>
+        <div>
+          <span className={tanContentClass}>fetch {mode} result</span>
+        </div>
+        <br />
+      </> : null
+    }
+    {
+      ([['Vertex Name', `${k + kInd}`],
+      ['Contain Vertices', `${v}`],
+        // (isUndefined(neighbor) ? undefined : ['Neighbors', `${silceArr(neighbor, silceArrNum).map(({ k, kInd }) => `${k + kInd}`).join(', ')}${neighbor.length > silceArrNum ? '...' : ''}`]),
+        // ['Vertex Degree', `${neighbor?.length}`,],
+      ] as ReadonlyArray<tanColorContentJsxParam>).filter(Boolean).map(tanColorContentJsx)
+    }
+  </>);
+};
+
 export const getTitle2JsxString: (...args: Parameters<typeof getTitle2Jsx>) => string = (...args) => renderToStaticMarkup(getTitle2Jsx(...args));
+export const getTitle2JsxStringForSuper: (...args: Parameters<typeof getTitle2Jsx>) => string = (...args) => renderToStaticMarkup(getTitle2JsxForSuper(...args));
 const commonTooltipOption: TooltipComponentOption = ({
   trigger: 'item',
   axisPointer: {
@@ -147,15 +169,24 @@ const commonEmphasisOption: (GraphSeriesOption
       // shadowOffsetY: 8
     }
   });
-const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: OriginGraphDataSuperReadonlyArr | undefined, mode?: Modes, size: execTextType['size'] = undefined, { max: maxV, min: minV } = getCommonValueFromTableData(dataArrWithPos, svgWH)): EChartsOption => {
+const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: OriginGraphDataSuperReadonlyArr | undefined, mode?: Modes, size: execTextType['size'] = undefined, { max: maxV, min: minV } = getCommonValueFromTableData(dataArrWithPos, svgWH), isBiggerThanShowAllCount = false): EChartsOption => {
   if (!dataArrWithPos || !graphData) {
     return {};
   }
   const graphLinkColor = getGraphLinkColor(dataArrWithPos, graphData);
-  const symbolSizeBase = (maxRadius - minRadius) / (maxV - minV);
   // console.log(symbolSizeBase, minRadius, maxV, minV);
-
-  const getSymbolSize = (v: number) => (v - minV) * symbolSizeBase + minRadius;
+  // const isBiggerThanShowAllCount = dataArrWithPos.length > showAllCount;
+  const { symbolSizeMax, symbolSizeMin } = (() => {
+    if (isBiggerThanShowAllCount) {
+      return { symbolSizeMax: maxV, symbolSizeMin: minV };
+    }
+    const neighborsVertex = dataArrWithPos.map(({ neighbor }) => neighbor?.length) as ReadonlyArray<number>;
+    const symbolSizeMin = min(...neighborsVertex);
+    const symbolSizeMax = max(...neighborsVertex);
+    return { symbolSizeMax, symbolSizeMin };
+  })();
+  const symbolSizeBase = (maxRadius - minRadius) / (symbolSizeMax - symbolSizeMin);
+  const getSymbolSize = (v: number) => (v - symbolSizeMin) * symbolSizeBase + minRadius;
   const superWidthArr = uniq(graphData.map(({ superWidth }) => superWidth));
   const getLineStyleWidth = (() => {
     if (isUndefined(head(superWidthArr))) {
@@ -201,7 +232,7 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
             // if ('dataIndex' in obj) {
             const posObj = dataArrWithPos[dataIndex];
             if (posObj) {
-              return getTitle2JsxString(posObj, mode);
+              return isBiggerThanShowAllCount ? getTitle2JsxStringForSuper(posObj, mode) : getTitle2JsxString(posObj, mode);
             }
             // }
             return backupStr;
@@ -232,8 +263,8 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
           //fontSize: 20
         },
         data: dataArrWithPos.map((dotData) => {
-          const { k, kInd, graphX, graphY, v, color } = dotData;
-          const symbolSize = getSymbolSize(v);
+          const { k, kInd, graphX, graphY, v, color, neighbor } = dotData;
+          const symbolSize = getSymbolSize(isBiggerThanShowAllCount ? v : neighbor?.length ?? v);
           return ({
             name: getDotName(dotData),
             value: v,
@@ -554,7 +585,7 @@ export default function Echarts (props: {
         const commonValueFromTableData = getCommonValueFromTableData(tableData, svgWH);
         const dataArrWithPos = getDataArrWithPos(tableData, graphData, commonValueFromTableData, innerHeight);
         // const dataArrWithPos = getDataArrWithPosWithCommonValueFromTableData(tableData, graphData, svgWH);
-        return getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData);
+        return getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData, true);
       }
     }
     const option = getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData);

@@ -212,8 +212,8 @@ export default function BCViz_new () {
   });
   const [tab, setTab] = useSafeState(TabKey.table);
   const [selectMode, setSelectMode, resetSelectMode] = useResetState(
-    isDEV ? Modes['Hierarchical Subgraphs Search'] :
-      Modes['Maximum Biclique']);
+    // isDEV ? Modes['Hierarchical Subgraphs Search'] :
+    Modes['Maximum Biclique']);
   const [selectEngine, setSelectEngine] = useSafeState<keyofRenderingEngine>(
     // isDEV ? 'SVG Engine' :
     'ECharts Engine');

@@ -488,6 +488,7 @@ export const doubleClickCircleFnForECharts = (props: ClickCircleProps
           start: head(drawDotDataSection) ?? 0,
           end: last(drawDotDataSection) ?? 0,
           color,
+          // datas:drawDotDataGroupByV,
         });
         willSetDrawDotData.push(...drawDotDataGroupByV.map(i => ({
           ...i,
