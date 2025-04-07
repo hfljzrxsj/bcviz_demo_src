@@ -1,66 +1,94 @@
-# 1. Install Node.js
-Download and install Node.js v22.14.0 (recommended):
-<https://nodejs.org/dist/v22.14.0/node-v22.14.0-x64.msi>
+# 1. Start the server
 
-If installation fails:
-1.Uninstall completely
-2.Try alternative version (v18.19.1):
-<https://nodejs.org/dist/v18.19.1/node-v18.19.1-x64.msi>
-Important: Allow installer to set PATH environment variables.
+There are three recommended methods to start the server:
 
-# 2. Verify Installation
-Run in CMD/PowerShell (Windows built-in terminals):
+## 1. NodeJS
+
+Check whether NodeJS exists in the system.
 
 ```bash
 node -v
+```
+```bash
 npm -v
 ```
+```bash
+npx -v
+```
 
-If commands not found:
-Manually add Node.js to system PATH.
+If the above version numbers can be output normally, you can try one of the following 3 servers.
 
-# 3. Install Dependencies
-Navigate to repository and run:
+### 1. http-server
 
 ```bash
-npm i --legacy-peer-deps
+npx http-server --port 80
 ```
-If failed, try these alternatives:
 
-1. cnpm
+or
+```bash
+npm exec http-server -- --port 80
+```
 
-   ```bash
-   npm install cnpm -g
-   cnpm i --legacy-peer-deps
-   ```
+### 2. serve
 
-2. yarn
+```bash
+npx serve -p 80
+```
 
-   ```bash
-   npm install yarn -g
-   yarn i --legacy-peer-deps
-   ```
+or
+```bash
+npm exec serve -- -p 80
+```
 
 
-# 4. Execution Commands
+### 3. vite
 
-1. Development server:
+```bash
+npx vite preview --open --outDir . --clearScreen false -d --port 80
+```
 
-    ```bash
-    npm run vite
-    ```
+or
+```bash
+npm exec vite -- preview --open --outDir . --clearScreen false -d --port 80
+```
 
-2. Production build:
+## 2. Python
 
-    ```bash
-    npm run vite:build
-    ```
-    Tips: Output in folder \dist
+Check whether Python exists in the system.
 
-2. Preview production build:
+```bash
+python -V
+```
 
-    ```bash
-    npm run vite:preview
-    ```
+or
 
-    Tips: production environment is the contents in folder \dist
+```bash
+python3 -V
+```
+
+If you can output the Python version, enter one of the following two commands:
+
+```bash
+python -m http.server 80
+```
+
+or
+
+```bash
+python3 -m http.server 80
+```
+
+## 3. Other Web server software
+
+1. Microsoft IIS（Internet Information Services）
+2. [Apache HTTP Server](https://httpd.apache.org/download.cgi)
+3. [Nginx](https://nginx.org/en/download.html)
+4. [Apache Tomcat](https://tomcat.apache.org/download-10.cgi)
+5. [Lighttpd](https://www.lighttpd.net/download)
+8. [Caddy](https://caddyserver.com/download)
+
+# 2. Open in browser
+
+Enter the following website address in the browser.
+
+<http://127.0.0.1:80> or <http://localhost:80>

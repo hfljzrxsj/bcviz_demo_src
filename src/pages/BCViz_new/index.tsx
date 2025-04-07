@@ -139,7 +139,7 @@ export const BCVizContext = createContext<BCVizContextType>(
 export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
-    const { origin, protocol, hash } = location;
+    const { origin, protocol, hash, host } = location;
     if (!sessionStorage['hjx'] && isPROD && origin !== baseURL && protocol === 'https:' && isChina()) {
       const href = baseURL + hash;
       if (confirm(`后端服务已上线，点击“确认”跳转.${href}`)) {
@@ -727,3 +727,5 @@ export default function BCViz_new () {
       {/* </BCVizContext.Provider> */}
     </>);
 }
+// const { log } = console;
+// Promise.resolve(import.meta).then(log);

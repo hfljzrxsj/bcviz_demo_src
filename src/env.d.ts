@@ -2,7 +2,7 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_resumeFolder: string;
+  // readonly VITE_resumeFolder: string;
   // 更多环境变量...
 }
 

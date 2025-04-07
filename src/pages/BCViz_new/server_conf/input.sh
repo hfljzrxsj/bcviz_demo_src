@@ -1,7 +1,5 @@
 sudo nginx -s reload
-curl "http://127.0.0.1:80/api/BCviz/MaximumBicliqueSearch?dataset=example.txt&BCviz_file=example_cohesion.txt&s=1&t=1"
 curl "http://127.0.0.1"
-curl "http://47.99.129.94/api/BCviz/MaximumBicliqueSearch?dataset=example.txt&BCviz_file=example_cohesion.txt&s=1&t=1"
 
 cd ./search-BCviz/
 cmake .
