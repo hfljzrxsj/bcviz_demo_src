@@ -4,7 +4,7 @@ import { colors_ } from './colors';
 import {
   type TooltipProps,
 } from "@mui/material";
-import type { OriginDataObj, OriginDataObjArr, OriginGraphDataReadonlyArr, PosDataObj, dotNeighbor, indexNeighbor, typeOfGetCommonValueFromTableData, kInd, GraphNeighbor as GraphNeighbor, drawLineData, PosDataObjArr, pos, getCommonValueFromTableDataReturnType, LineSVGProps, CommonSVGProps, ClickCircleProps, SizeProps, SizeAndSetProps, getCommonValueFromTableDataParamers } from './types';
+import type { OriginDataObj, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr, PosDataObj, dotNeighbor, indexNeighbor, typeOfGetCommonValueFromTableData, kInd, GraphNeighbor as GraphNeighbor, drawLineData, PosDataObjArr, pos, getCommonValueFromTableDataReturnType, LineSVGProps, CommonSVGProps, ClickCircleProps, SizeProps, SizeAndSetProps, getCommonValueFromTableDataParamers } from './types';
 import classNames from "clsx";
 import style from './_index.module.scss';
 import { getTitle2Jsx } from '../BCViz_new/Echarts';
@@ -30,7 +30,7 @@ export const UV = freeze({
 
 export const marginSize = 32;
 export const halfMarginSize = marginSize / 2;
-export const getCommonValueFromTableData = (tableData: OriginDataObjArr | undefined, {
+export const getCommonValueFromTableData = (tableData: OriginDataObjReadonlyArr | undefined, {
   svgWidth,
   svgHeight,
 }: {
@@ -120,7 +120,7 @@ export const getDataArrWithPos = (tableData: getCommonValueFromTableDataParamers
   // console.log(JSON.stringify(graphNeighbor) === JSON.stringify(graphNeighbor_));
 
   const realWidth = svgWidth - marginSize * 2;
-  const tableDataGroupByK = groupBy(tableData, ({ k }) => k) as unknown as Record<UVenum, OriginDataObjArr>;
+  const tableDataGroupByK = groupBy(tableData, ({ k }) => k) as unknown as Record<UVenum, OriginDataObjReadonlyArr>;
   const graphGroupDiffX = mapValues(tableDataGroupByK, ((v) => {
     return realWidth / (v.length - 1);
   })) as Record<UVenum, number>;//{u:6,v:6}
@@ -234,7 +234,7 @@ const getColor = (colors: ReadonlyArray<string | undefined>) => {
   return firstColor;
 };
 type GroupByDot = Record<UVenum, Record<OriginDataObj['kInd'], PosDataObj>>;
-export const getGroupByDot = (drawDotData?: OriginDataObjArr): GroupByDot => {
+export const getGroupByDot = (drawDotData?: OriginDataObjReadonlyArr): GroupByDot => {
   const initGraphNeighbor = getInitGraphNeighbor();
   if ((isUndefined(drawDotData) || drawDotData.length === 0)) {
     return initGraphNeighbor;

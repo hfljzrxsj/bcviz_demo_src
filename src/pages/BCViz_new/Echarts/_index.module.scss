@@ -1,13 +1,48 @@
+%Flex {
+  display: flex;
+  gap: 9q;
+  // flex-direction: column;
+}
+
 .AllPanel {
+  // background-color: transparent;
+  display: flex;
+  gap: 9q;
+  flex-direction: column;
+
+  &:fullscreen {
+    background-color: #fff;
+  }
+
   &-ECharts {
-    display: flex;
+    // background-color: transparent;
+    @extend %Flex;
     width: 100%;
+    // min-height: 84vh;
     // grid-row: auto;
     // grid-template-columns: 1fr 1fr;
     /* 等宽两列 */
-    gap: 9q;
     /* 列间距 */
-    min-height: 84vh;
+    // min-height: 84vh;
   }
+
+  .ToggleButtonGroupWrapper:fullscreen {
+    display: none;
+    visibility: hidden;
+  }
+
+  &-ToggleButtonGroup {
+    // &:fullscreen {
+    //   display: none;
+    //   visibility: hidden;
+    // }
+
+    display: flex;
+
+    &-ToggleButton {
+      flex-grow: 1;
+    }
+  }
+
 
 }

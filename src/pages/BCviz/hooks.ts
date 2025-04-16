@@ -1,10 +1,10 @@
 import { useSafeState, useMemoizedFn } from "ahooks";
 import { useMemo, useRef } from "react";
 import { clickCircleFn, doubleClickCircleFn, getCommonValueFromTableData, getSvgSize } from "./utils";
-import type { ClickCircleProps, OriginDataObjArr, OriginGraphDataReadonlyArr } from "./types";
+import type { ClickCircleProps, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr } from "./types";
 const { values } = Object;
 export default function useBCVizFnHooks () {
-  const [tableData, setTableData] = useSafeState<OriginDataObjArr>();
+  const [tableData, setTableData] = useSafeState<OriginDataObjReadonlyArr>();
   const [graphData, setGraphData] = useSafeState<OriginGraphDataReadonlyArr>([]);
   // const [isEditX, {
   //   toggle: toggleIsEditX,

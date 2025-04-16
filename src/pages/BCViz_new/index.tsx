@@ -35,8 +35,8 @@ import Tool from "../BCviz/Tool";
 import TabPanelInput, { type UseSetInputST } from "./TabPanelInput/TabPanelInput";
 import { isChina } from "./getIntl";
 import { isDEV, isPROD } from "@/utils/isEnv";
-import { findTopInOrder, getDataArrWithPosForECharts, getDataArrWithPosMutilDotsColor, getDataArrWithPosWithCommonValueFromTableData, getDotName, getTableDataWithIndOrFilter, getTooltipTitle, Modes, ModesShortcut, tanContentClass } from "./utils";
-import type { HSSProps, OriginDataObjArr, OriginDataObjWithIndex, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetSizeProps, SetStateType, SizeProps } from "../BCviz/types";
+import { findTopInOrder, getDataArrWithPosForECharts, getDataArrWithPosMutilDotsColor, getDataArrWithPosWithCommonValueFromTableData, getDotName, getTableDataWithIndOrFilter, getTooltipTitle, Modes, ModesShortcut, TabKey2Title, tanContentClass } from "./utils";
+import type { HSSProps, OriginDataObjReadonlyArr, OriginDataObjWithIndex, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetSizeProps, SetStateType, SizeProps } from "../BCviz/types";
 import SVGCharts from "./SVGCharts";
 import useBCVizFnHooks from "../BCviz/hooks";
 import Echarts, { tanColorContentJsx } from "./Echarts";
@@ -136,6 +136,11 @@ export const BCVizContext = createContext<BCVizContextType>(
   // dataArrWithPos: []
   // }
 );
+const CustomTab = ({ tabKey, ...props }: Omit<Parameters<typeof Tab>[0], 'label' | 'value' | 'className'> & {
+  readonly tabKey: TabKey;
+}) => <Tab label={TabKey2Title[tabKey]} value={tabKey} className={style['Tab'] ?? ''}
+  {...props}
+  />;
 export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
@@ -171,10 +176,11 @@ export default function BCViz_new () {
     ...commonUseRequestParams,
     manual: true,
   });
+  const isBiggerThanShowAllCount = originTableData ? originTableData.length > showAllCount : false;
   useUpdateEffect(() => {
     mutate(undefined);
     if (originTableData) {
-      if (originTableData.length > showAllCount) {
+      if (isBiggerThanShowAllCount) {
         getSuperData();
       } else {
         mutateSuperData(undefined);
@@ -220,7 +226,7 @@ export default function BCViz_new () {
 
   const isEditX = useMemo(() => isEditXFunc(selectMode), [selectMode]);
   const [selectShowItem, setSelectShowItem] = useSafeState<number>(0);
-  const useMultiDots = useSafeState<OriginDataObjArr | undefined>([]);
+  const useMultiDots = useSafeState<OriginDataObjReadonlyArr | undefined>([]);
 
   const [multiDots, setMultiDots] = useMultiDots;
   const [isShowAll, { set: setIsShowAll, setTrue: setShowAll, setFalse: setNotShowAll }] = useBoolean(true);
@@ -308,7 +314,9 @@ export default function BCViz_new () {
   });
 
   useUpdateEffect(() => {
-    setTab(TabKey.table);
+    setTab(
+      isDEV ? TabKey.all :
+        TabKey.table);
     resetSelectMode();
   }, [tableData, selectEngine]);
   useUpdateEffect(() => {
@@ -624,8 +632,8 @@ export default function BCViz_new () {
               // role="navigation"
               >
                 {/* <Tab label="All" value={TabKey.all} className={style['Tab'] ?? ''} /> */}
-                <Tab label="Cohesion" value={TabKey.table} className={style['Tab'] ?? ''} />
-                <Tab label="Bipartite Graph" value={TabKey.graph} className={style['Tab'] ?? ''} />
+                <CustomTab tabKey={TabKey.table} />
+                <CustomTab tabKey={TabKey.graph} />
                 <Tooltip arrow
                   title={params ?
                     <>
@@ -641,13 +649,14 @@ export default function BCViz_new () {
                     : null}
                 // placement="right"
                 >
-                  <Tab label="Search Result" value={TabKey.result} disabled={isNotGetResult
+                  <CustomTab tabKey={TabKey.result} disabled={isNotGetResult
                     // || isEditX
                   } className={
                     clsx({ [style['Tab'] ?? '']: !isNotGetResult })
                     // style['Tab'] ?? ''
                   } />
                 </Tooltip>
+                {isEngineECharts ? <CustomTab tabKey={TabKey.all} /> : null}
               </TabList>
               {/* </AppBar> */}
             </Paper>

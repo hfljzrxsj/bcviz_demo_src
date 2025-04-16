@@ -24,7 +24,9 @@ export interface PosDataObj extends OriginDataObjWithIndex {
   readonly color?: string;
   // readonly neighborCount?: number;
 }
-export type OriginDataObjArr = ReadonlyArray<OriginDataObj>;
+
+export type OriginDataObjArr = Array<OriginDataObj>;
+export type OriginDataObjReadonlyArr = ReadonlyArray<OriginDataObj>;
 export type typeOfGetCommonValueFromTableData = typeof getCommonValueFromTableData;
 export type getCommonValueFromTableDataReturnType = ReturnType<typeOfGetCommonValueFromTableData>;
 export type getCommonValueFromTableDataParamers = Parameters<typeOfGetCommonValueFromTableData>;

@@ -2,7 +2,7 @@ import {
   Route, Routes,
 } from 'react-router-dom';
 import BCViz_new from '@/pages/BCViz_new';
-import Virtualize from '@/pages/BCViz_new/TestReactWindow/File';
+// import Virtualize from '@/pages/BCViz_new/TestReactWindow/File';
 // import { useSafeState } from 'ahooks';
 // import { useEffect } from 'react';
 
@@ -26,7 +26,7 @@ export default function MyRoute () {
         index
         element={<BCViz_new />}
       />
-      <Route element={<Virtualize />} path='test' />
+      {/* <Route element={<Virtualize />} path='test' /> */}
     </Routes>
   );
 }

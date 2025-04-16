@@ -5,7 +5,7 @@ import type { SetState } from 'ahooks/lib/useSetState';
 import { useMemoizedFn } from 'ahooks';
 
 import type { UseSetInputST } from '../TabPanelInput/TabPanelInput';
-import { allEqual } from '../ChartsPaper';
+import { allEqual } from '../hooks/useGestureFullScreen.mjs';
 const { isSafeInteger } = Number;
 export interface InputSTSetState {
   readonly s: string;

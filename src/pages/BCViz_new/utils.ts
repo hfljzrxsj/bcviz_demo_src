@@ -3,7 +3,7 @@ import { isPROD } from "@/utils/isEnv";
 import { clamp, groupBy, head, isPlainObject, isUndefined, mapValues, orderBy, sortBy } from "lodash";
 import type { execTextType, UVReturnType } from "./api";
 import { tanColorContentJsx } from "./Echarts";
-import type { getCommonValueFromTableDataParamers, getCommonValueFromTableDataReturnType, GraphNeighbor, OriginDataObj, OriginDataObjArr, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, typeOfGetCommonValueFromTableData } from "../BCviz/types";
+import type { getCommonValueFromTableDataParamers, getCommonValueFromTableDataReturnType, GraphNeighbor, OriginDataObj, OriginDataObjReadonlyArr, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, typeOfGetCommonValueFromTableData } from "../BCviz/types";
 import { getCommonValueFromTableData, getDataArrWithPos, getGraphNeighbor, getGroupByDot, getInitGraphNeighbor, getOneDotNeighbor, marginSize, UVenum, uvIndObj, uvLength, type getDataArrWithPosParameters, type getDataArrWithPosType } from "../BCviz/utils";
 import { clickMultiDotColor, showAllCount } from ".";
 
@@ -40,10 +40,10 @@ export const getFileIdb = <T> (query: NonNullable<IndexedDBGetProps['query']>) =
 // MBE、PQB
 
 export const enum TabKey {
-  // all,
   table,
   graph,
   result,
+  all,
 }
 export const TabKeyToName: Partial<Record<TabKey, string>> = freeze({
   [TabKey.table]: "Cohesion",
@@ -54,8 +54,14 @@ export const getTooltipTitle = (option: execTextType) => {
 };
 export const tanContentClass = 'tanContent';
 
-export const getDotName = ({ k, kInd }: OriginDataObj) => `${k}${kInd}`;
-export const getDataArrWithPosMutilDotsColor = (dataArrWithPos: PosDataObjArr, multiDots?: OriginDataObjArr) => {
+export const getDotName = (obj: OriginDataObj | string) => {
+  if (typeof obj === 'string') {
+    return obj;
+  }
+  const { k, kInd } = obj;
+  return `${k}${kInd}`;
+};
+export const getDataArrWithPosMutilDotsColor = (dataArrWithPos: PosDataObjArr, multiDots?: OriginDataObjReadonlyArr) => {
   if (!multiDots || multiDots.length === 0) {
     return dataArrWithPos;
   }
@@ -73,7 +79,7 @@ export const getDataArrWithPosMutilDotsColor = (dataArrWithPos: PosDataObjArr, m
 export const minRadius = 40;
 export const maxRadius = 80;
 export const getSymbolSize = (v: number, bool?: unknown) => clamp(bool ? v * 5 : v, minRadius, maxRadius);
-function calculateCirclePositions (radii: OriginDataObjArr, UV?: UVReturnType): ReadonlyArray<number> {
+function calculateCirclePositions (radii: OriginDataObjReadonlyArr, UV?: UVReturnType): ReadonlyArray<number> {
   if (radii.length === 0) return [];
   const clampedRadii: ReadonlyArray<number> = radii.map(({ v, k, kInd }) => getSymbolSize(v, UV?.[k].includes(kInd)));
   const firstR = head(clampedRadii);
@@ -101,7 +107,7 @@ export const getDataArrWithPosForECharts: getDataArrWithPosType = (tableData, gr
   }
   const graphNeighbor: GraphNeighbor = getGraphNeighbor(graphData);
   const realWidth = svgWidth - marginSize * 2;
-  const tableDataGroupByK = groupBy(tableData, ({ k }) => k) as unknown as Record<UVenum, OriginDataObjArr>;
+  const tableDataGroupByK = groupBy(tableData, ({ k }) => k) as unknown as Record<UVenum, OriginDataObjReadonlyArr>;
   const graphGroupDiffY = (graphSvgHeght - marginSize * 2) / (uvLength - 1);
   const tableDataGroupToIndex = mapValues(tableDataGroupByK, (arr) => {
     return new Map(sortBy(arr, ({ kInd }) => kInd).map(({ kInd }, ind) => ([kInd, ind])));
@@ -137,7 +143,7 @@ export const findTopInOrder = (array: OriginDataObjWithIndexArr): OriginDataObjW
   return sortedByOriginalOrder;
 };
 
-export const getTableDataWithIndOrFilter = ((isShowAll: boolean, tableData?: OriginDataObjArr,): OriginDataObjWithIndexArr => {
+export const getTableDataWithIndOrFilter = ((isShowAll: boolean, tableData?: OriginDataObjReadonlyArr,): OriginDataObjWithIndexArr => {
   if (!tableData) {
     return [];
   }
@@ -172,4 +178,11 @@ export const getDataArrWithPosWithCommonValueFromTableDataForECharts = (tableDat
 export const svgWH = freeze({
   svgHeight: innerHeight,
   svgWidth: innerWidth
+});
+
+export const TabKey2Title: Record<TabKey, string> = freeze({
+  [TabKey.table]: 'Maximum Cohesion',
+  [TabKey.graph]: "Bipartite Graph",
+  [TabKey.result]: "Search Result",
+  [TabKey.all]: 'All'
 });

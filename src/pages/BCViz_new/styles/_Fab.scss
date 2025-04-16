@@ -1,9 +1,14 @@
-%Fab {
-  top: 9q;
-  left: 9q;
-  opacity: .8;
+%Opacity {
+  opacity: .5;
+  // position: fixed;
 
   &:hover {
     opacity: initial;
   }
+}
+
+%Fab {
+  top: 9q;
+  left: 9q;
+  @extend %Opacity;
 }

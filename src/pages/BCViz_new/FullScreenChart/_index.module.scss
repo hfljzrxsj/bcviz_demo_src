@@ -1,0 +1,32 @@
+@import '../styles/Fab';
+
+.relative {
+  position: relative;
+  width: 100%;
+  transition: 1s;
+
+  .Fab {
+    @extend %Opacity;
+    left: 0;
+    top: 0;
+    transform: scale(.8);
+    transform-origin: left top;
+    transition: 1s;
+    overflow: hidden;
+
+    &:hover {
+      transform: scale(1);
+    }
+
+    position: absolute;
+    // position: fixed;
+
+    &.opacity0 {
+      opacity: 0;
+    }
+  }
+
+  &.width0 {
+    width: 0;
+  }
+}

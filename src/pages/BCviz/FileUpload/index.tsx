@@ -8,13 +8,14 @@ import { type SetState } from 'ahooks/lib/createUseStorageState';
 import FileUploadSimple, { fetchData } from "../FileUploadSimple";
 import classNames from "clsx";
 import { unstable_batchedUpdates } from "react-dom";
-import type { OriginDataObj, OriginDataObjArr, OriginGraphDataReadonlyArr, OriginGraphDataArr, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr } from "../types";
+import type { OriginDataObj, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr, OriginGraphDataArr, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr } from "../types";
 import { useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 import { uniq } from "lodash";
 // import type { NullValue } from "vite/node_modules/rollup";
 // import type { NullValue } from "rollup";
 import { ToastContainer } from "react-toastify";
+import { TabKey, TabKey2Title } from "@/pages/BCViz_new/utils";
 const { error } = console;
 // import {
 //   usePopupState,
@@ -54,7 +55,7 @@ export const parseTableData = ((str) => {
     });
   }
   return result;
-}) as parseData<OriginDataObjArr>;
+}) as parseData<OriginDataObjReadonlyArr>;
 const parseGraphDataSingle = (i: string, result: OriginGraphDataArr) => {
   const [uStr, vStr] = i.trim().split(/[ \t]/) as [string, string];
   const u = parseInt(uStr);
@@ -115,12 +116,12 @@ type FileNameKeys = ['dataset', 'BCviz_file'];
 const fileNameKeys: FileNameKeys = (['dataset', 'BCviz_file',]);
 const fileUploadSimpleProps = freeze([
   {
-    title: 'Bipartite Graph',
+    title: TabKey2Title[TabKey.graph],
     parseData: parseGraphData,
     defaultTxt: ['example.txt', 'writer.txt', 'marvel.txt']
   },
   {
-    title: 'Maximum Cohesion',
+    title: TabKey2Title[TabKey.table],
     parseData: parseTableData,
     defaultTxt: ['example_cohesion.txt', 'writer_cohesion.txt', 'marvel_cohesion.txt']
   }
@@ -356,7 +357,7 @@ export default function FileUpload (props: FileUploadProps) {
 // export { type NullValue };
 
 /* 马上要做的：
-3. 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
+3. 如果是超图，Tab标题应该标注超图
 4. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）。每次更改Select，需要事件循环末期dispatchEvent resize
 5. HSS用AutoComplete分组显示（all(-1)、1、2、3...），src\pages\BCViz_new\Echarts\index.tsx的visualMapSection不需要重新计算，从外面传入即可
 
@@ -383,6 +384,7 @@ export default function FileUpload (props: FileUploadProps) {
 
 // 失败：
 // 二部图的点坐标重新设计，把getDataArrWithPos和UV合并起来
+// 选择多点时，AutoComplete列表太多，需要虚拟dom库（react-window）（src\pages\Test\File.tsx）
 
 
 

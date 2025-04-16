@@ -1,18 +1,18 @@
-import { useMemo, type ReactNode } from "react";
+import { useMemo, type ReactNode, type CSSProperties } from "react";
 import type { DataArrWithPos, HSSProps, OriginGraphDataReadonlyArr, OriginGraphDataSuper, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetStateType, getCommonValueFromTableDataReturnType } from "@/pages/BCviz/types";
 import { UVenum, clickToSetSize, doubleClickCircleFnForECharts, getCommonValueFromTableData, getDataArrWithPos, getGraphLinkColor, isEditXFunc } from "@/pages/BCviz/utils";
-import { TabKey, getDataArrWithPosWithCommonValueFromTableData, getDotName, getFileIdb, getSymbolSize, maxRadius, minRadius, svgWH, tanContentClass } from "../utils";
-import CommonCharts, { type AxisPointerComponentOption, type EChartsOption, type GraphSeriesOption, type LineSeriesOption, type MarkAreaComponentOption, type TooltipComponentOption, type onEChartsParam, type onEChartsParamFunc } from "../CommonECharts";
+import { TabKey, TabKey2Title, getDataArrWithPosWithCommonValueFromTableData, getDotName, getFileIdb, getSymbolSize, maxRadius, minRadius, svgWH, tanContentClass } from "../utils";
+import CommonCharts, { resizeEvent, type AxisPointerComponentOption, type EChartsOption, type GraphSeriesOption, type LineSeriesOption, type MarkAreaComponentOption, type TooltipComponentOption, type onEChartsParam, type onEChartsParamFunc } from "../CommonECharts";
 import { freeze } from "immer";
-import { clamp, debounce, head, isUndefined, last, map, uniq } from "lodash";
+import { clamp, debounce, head, isUndefined, last, map, negate, uniq, without } from "lodash";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Modes } from "../utils";
 import type { InputSTSetState } from "../InputST";
-import { toast } from 'react-toastify';
+import { ToastContainer, toast } from 'react-toastify';
 import type { UseSetInputST } from "../TabPanelInput/TabPanelInput";
 import type { execTextType } from "../api";
 import ChartsTabPanel from "../ChartsPaper";
-import { useMemoizedFn, usePrevious, useSafeState, } from 'ahooks';
+import { useDebounceFn, useLockFn, useMemoizedFn, usePrevious, useSafeState, useUpdateEffect, } from 'ahooks';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { Paper } from '@mui/material';
 import OutlinedInput from '@mui/material/OutlinedInput';
@@ -29,12 +29,20 @@ import style from './_index.module.scss';
 import { showAllCount } from "..";
 //@ts-expect-error
 import echartsGlobalDefault from 'echarts/lib/model/globalDefault';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+
 
 const echartsColors: ReadonlyArray<string> = echartsGlobalDefault.color;
 
 import type { SuperDataType } from "../mockJs";
+import { waitLastEventLoop, waitMiddleEventLoop } from "@/utils";
+import FullScreenChart from "../FullScreenChart";
 const { isSafeInteger } = Number;
 const { min, max } = Math;
+const { isArray, from } = Array;
 
 const isUseForce = false;
 
@@ -134,11 +142,14 @@ const commonAxisPointerOption: AxisPointerComponentOption = freeze({
   // }
   // }
 });
+const opacityToBlack = (opacity: number) => `rgba(0,0,0,${opacity})`;
+const shadowColor5 = opacityToBlack(.5);
+const shadowColor3 = opacityToBlack(.3);
 const commonEmphasisOption: (GraphSeriesOption
   & LineSeriesOption)['emphasis'] = ({
     lineStyle: {
       // width: 4,
-      shadowColor: 'rgba(0,0,0,.5)',
+      shadowColor: shadowColor5,
       shadowBlur: 10,
       // color:'red',
     },
@@ -147,15 +158,18 @@ const commonEmphasisOption: (GraphSeriesOption
       show: true,
       fontSize: 24,
       fontWeight: 'bolder',
+      textShadowBlur: 5,
+      textShadowColor: shadowColor3,
     },
     labelLine: {
       show: true
     },
     itemStyle: {
-      shadowColor: 'rgba(0,0,0,.3)',
+      shadowColor: shadowColor3,
       shadowBlur: 10,
       // shadowOffsetY: 8
-    }
+    },
+
   });
 const getSymbolSizeMaxMin = ({ isBiggerThanShowAllCount, maxV, minV, dataArrWithPos }: {
   readonly isBiggerThanShowAllCount: boolean,
@@ -276,8 +290,12 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
             ...(color ? {
               itemStyle: {
                 color,
-
               },
+              label: {
+                fontWeight: 'bolder',
+                textShadowBlur: 5,
+                // textShadowColor: shadowColor5,
+              }
             } : null),
             // x: kInd * 60,
             // y: k === UVenum.U ? 0 : length * 50
@@ -323,12 +341,12 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
           opacity: 1,
           cap: 'round',
           join: 'round',
-          shadowColor: 'rgba(0,0,0,.3)',
+          shadowColor: shadowColor3,
           shadowBlur: 5,
           // color: "#000"
         },
         itemStyle: {
-          shadowColor: 'rgba(0,0,0,.3)',
+          shadowColor: shadowColor3,
           shadowBlur: 5,
         },
         emphasis: {
@@ -347,7 +365,7 @@ type LineDataItemOption = NonNullable<LineSeriesOption["data"]>[number];
 const getLineItemOptionFromColor = (color: PosDataObj['color']): LineDataItemOption & object => (color ? {
   itemStyle: {
     color,
-    shadowColor: 'rgba(0,0,0,.3)',
+    shadowColor: shadowColor3,
     shadowBlur: 16,
   },
   symbolSize: 16,
@@ -375,9 +393,17 @@ const getKey = (TabKey: TabKey) => {
   // const a = `${new Error().stack}${TabKey}`;
   return `${Echarts.name}${TabKey}`;
 };
-type AllShowEChartsKey = 'line' | 'graph' | 'result';
-type AllShowEChartsKeyArr = ReadonlyArray<AllShowEChartsKey>;
-const allShowEChartsKeyArr: AllShowEChartsKeyArr = ['line', 'graph', 'result'];
+type typeofTabKey2Title = typeof TabKey2Title;
+type AllShowEChartsKey = typeofTabKey2Title[keyof typeofTabKey2Title];
+
+type AllShowEChartsKeyArr = ReadonlyArray<TabKey>;
+const initAllShowEChartsKeyArr = [TabKey.table, TabKey.graph,];
+const allShowEChartsKeyArr: AllShowEChartsKeyArr = [...initAllShowEChartsKeyArr,
+TabKey.result
+];
+const toastId = 'leastOneChart';
+const filterUndefined = <T,> (arr: ReadonlyArray<T>) => arr.filter(negate(isUndefined));
+const filterToLength = (arr: ReadonlyArray<unknown>) => filterUndefined(arr).length;
 export default function Echarts (props: {
   readonly graphData: OriginGraphDataReadonlyArr;
   readonly resultGraph: OriginGraphDataReadonlyArr | undefined;
@@ -397,6 +423,7 @@ export default function Echarts (props: {
     superData,
   } = props;
   const isNotGetResult = isUndefined(size);
+
   const { dataArrWithPos, visualMapSection, sections } = useMemo(() => {
     if (isEditX) {
       const { datas, visualMapSection, sections } = doubleClickCircleFnForECharts({ ...props });
@@ -642,21 +669,101 @@ export default function Echarts (props: {
   const LineCharts = <CommonCharts option={lineChartsOption} onParams={[onDblClick, onClick]} />;
   const GraphCharts = <CommonCharts option={GraphChartsOption} onParams={[onDblClick, onClick]} />;
   const ResultCharts = <CommonCharts option={ResultGraphChartsOption} />;
-  const [allShowECharts, setAllShowECharts] = useSafeState<AllShowEChartsKeyArr>(['line', 'graph']);
-  const previousAllShowECharts = usePrevious(allShowECharts);
-  const keyToJSX = useMemoizedFn((jsx: JSX.Element, key: AllShowEChartsKey) => {
-    return allShowECharts.includes(key) ? jsx : null;
+  const [allShowECharts, setAllShowECharts] = useSafeState<AllShowEChartsKeyArr>(initAllShowEChartsKeyArr);
+  const setAllShowEChartsLock = useLockFn((newVals: Parameters<typeof setAllShowECharts>[0]) => {
+    // const newVals = args[0];
+    if (isArray(newVals)) {
+      if (filterToLength(newVals) === 0) {
+        toast.warn('Please leave at least one chart.', {
+          toastId,
+        });
+      } else {
+        toast.dismiss(toastId);
+        setAllShowECharts(newVals);
+      }
+    }
+    return waitMiddleEventLoop();
   });
+  const previousAllShowECharts = usePrevious(allShowECharts);
+  const filterAllShowECharts = filterUndefined(allShowECharts);
+  const isSomeOneInFullScreen = filterAllShowECharts.length === 1;
+  const enterFullScreen = useMemoizedFn((tabkey: TabKey) => () => {
+    setAllShowECharts([tabkey]);
+  });
+  const exitFullScreen = useMemoizedFn(() => {
+    if (previousAllShowECharts) {
+      setAllShowECharts(previousAllShowECharts);
+    }
+  });
+  const keyToJSX = useMemoizedFn((jsx: JSX.Element, key: TabKey) => {
+    const isInFullScreen = isSomeOneInFullScreen && head(filterAllShowECharts) === key;
+    return true ?
+      <FullScreenChart
+        isInFullScreen={isInFullScreen}
+        isShow={allShowECharts.includes(key)}
+        onClick={isInFullScreen ? exitFullScreen : enterFullScreen(key)}
+      >{jsx}</FullScreenChart>
+
+      : null;
+  });
+  useUpdateEffect(() => {
+    waitLastEventLoop(() => {
+      dispatchEvent(resizeEvent);
+    });
+  }, [allShowECharts]);
+
   return <>
-    {/* <ChartsTabPanel value={TabKey.all} key={getKey(TabKey.all)}>
-      <Paper elevation={24} className={style['AllPanel'] ?? ''}>
-        <Paper elevation={24} className={style['AllPanel-ECharts'] ?? ''}>
-          {keyToJSX(LineCharts, 'line')}
-          {keyToJSX(GraphCharts, 'graph')}
-          {isNotGetResult ? null : keyToJSX(ResultCharts, 'result')}
-        </Paper>
-        <Paper elevation={24} >
-          <FormControl
+    <ChartsTabPanel value={TabKey.all} key={getKey(TabKey.all)}>
+      <div elevation={0} className={style['AllPanel'] ?? ''}>
+        <div elevation={0} className={style['AllPanel-ECharts'] ?? ''} style={{ '--minHeight': '71vh' } as CSSProperties}>
+          {keyToJSX(LineCharts, TabKey.table)}
+          {keyToJSX(GraphCharts, TabKey.graph)}
+          {isNotGetResult ? null : keyToJSX(ResultCharts, TabKey.result)}
+        </div>
+        <Paper elevation={24} className={style['ToggleButtonGroupWrapper'] ?? ''}>
+          <ToggleButtonGroup size="large"
+            value={allShowECharts}
+            onChange={(e, newVals) => {
+              // if (isArray(newVals)) {
+              setAllShowEChartsLock(newVals);
+              // }
+            }}
+            className={style['AllPanel-ToggleButtonGroup'] ?? ''}
+          >
+            {
+              allShowEChartsKeyArr.map(tabkey => {
+                const isDisabled = tabkey === TabKey.result && isNotGetResult;
+                return <ToggleButton value={tabkey} disabled={isDisabled}
+                  className={style['AllPanel-ToggleButtonGroup-ToggleButton'] ?? ''}
+                  size="large"
+                >
+                  {/* <fieldset>
+                    <legend>{TabKey2Title[tabkey]}</legend>
+                     */}
+                  <FormControlLabel control={
+                    <Checkbox checked={allShowECharts.includes(tabkey)} disabled={isDisabled} size="large"
+                    // onChange={e => {
+                    //   const { checked } = e.target;
+                    //   if (checked) {
+                    //     // console.log(uniq([...allShowECharts, tabkey]), allShowECharts);
+                    //     // setAllShowECharts(from(new Set([...allShowECharts, tabkey])));
+                    //     setAllShowECharts(uniq([...allShowECharts, tabkey]));
+                    //   } else {
+                    //     console.log(without(allShowECharts, tabkey), allShowECharts);
+                    //     setAllShowECharts(without(allShowECharts, tabkey));
+                    //   }
+                    // }}
+                    />
+                  }
+
+                    label={TabKey2Title[tabkey]}
+                  />
+                  {/* </fieldset> */}
+                </ToggleButton>;
+              })
+            }
+          </ToggleButtonGroup>
+          {/* <FormControl
             fullWidth
           >
             <InputLabel>HJX</InputLabel>
@@ -670,14 +777,17 @@ export default function Echarts (props: {
                   target: { value },
                 } = event;
                 setAllShowECharts(
-                  typeof value === 'string' ? (value.split(',') as AllShowEChartsKeyArr) : value,
+                  typeof value === 'string' ? (value.split(',').map(Number) as AllShowEChartsKeyArr) : value,
                 );
+                waitLastEventLoop(() => {
+                  dispatchEvent(resizeEvent);
+                });
               }}
               input={<OutlinedInput label="Chip" />}
               renderValue={(selected) => (
                 <>
                   {selected.map((value) => (
-                    <Chip key={value} label={value}
+                    <Chip key={value} label={TabKey2Title[value]}
                     />
                   ))}
                 </>
@@ -687,17 +797,18 @@ export default function Echarts (props: {
                 <MenuItem
                   key={name}
                   value={name}
+                  disabled={name === TabKey.result && isNotGetResult}
                 >
                   <Checkbox checked={allShowECharts.includes(name)} />
-                  <ListItemText primary={name} />
+                  <ListItemText primary={TabKey2Title[name]} />
                 </MenuItem>
               ))}
             </Select>
-          </FormControl>
+          </FormControl> */}
         </Paper>
 
-      </Paper>
-    </ChartsTabPanel> */}
+      </div>
+    </ChartsTabPanel>
     <ChartsTabPanel value={TabKey.table} key={getKey(TabKey.table)}>
       {LineCharts}
     </ChartsTabPanel>

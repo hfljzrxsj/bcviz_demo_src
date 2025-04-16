@@ -104,8 +104,9 @@ body {
 .Chart {
 
   // position: relative;
-  min-height: 84vh;
+  min-height: var(--minHeight, 84vh);
   width: 100%;
+  flex-grow: 1;
   // &-inner {
 
   //   // min-height: 84vh;

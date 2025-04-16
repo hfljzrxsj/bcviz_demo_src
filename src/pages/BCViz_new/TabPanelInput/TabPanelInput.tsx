@@ -14,7 +14,7 @@ import { LoadingButton, TabPanel } from "@mui/lab";
 import BCVizNewStyle from "../_index.module.scss";
 import { Modes, ModesShortcut, getDotName } from "../utils";
 import { inputLabels } from "../Echarts";
-import type { OriginDataObjArr, PosDataObjArr, UseGetFromST } from "@/pages/BCviz/types";
+import type { OriginDataObj, OriginDataObjArr, OriginDataObjReadonlyArr, PosDataObjArr, UseGetFromST } from "@/pages/BCviz/types";
 import type { FileNames } from "../api";
 
 import type { Children } from "@/types/children";
@@ -23,7 +23,9 @@ import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
 import CheckBoxIcon from '@mui/icons-material/CheckBox';
 import AutocompleteRenderInput from "../AutoCompleteRenderInput";
 import { useSafeState } from 'ahooks';
-import { uvIndObj } from "@/pages/BCviz/utils";
+import { UVenum, uvIndObj } from "@/pages/BCviz/utils";
+import { showAllCount } from "..";
+const { isSafeInteger } = Number;
 const { freeze } = Object;
 export type UseSetState<T extends Record<string, any>> = typeof useSetState<T>;
 export type UseSetInputST = ReturnType<UseSetState<InputSTSetState>>;
@@ -35,8 +37,8 @@ export default function TabPanelInput (props: {
   readonly modeKey: Modes;
   readonly fileNames: FileNames;
   readonly setTabToResult: () => void;
-  readonly dataArrWithPos: OriginDataObjArr;
-  readonly useMultiDots: UseSafeState<OriginDataObjArr>;
+  readonly dataArrWithPos: OriginDataObjReadonlyArr;
+  readonly useMultiDots: UseSafeState<OriginDataObjReadonlyArr>;
   // readonly labelS: string;
   // readonly labelT: string;
 } & UseGetFromST) {
@@ -52,6 +54,7 @@ export default function TabPanelInput (props: {
   const { data, loading, runAsync } = useGetFromST;
   const [inputST, setInputST] = useSetInputST;
   const { s: labelS = '', t: labelT = '' } = inputLabels[mode] ?? {};
+  const isBiggerThanShowAllCount = dataArrWithPos.length > showAllCount;
   return <TabPanel value={mode} className={BCVizNewStyle['TabPanel'] ?? ''}>
     <Paper elevation={24} className={style['Input'] ?? ''}>
       <InputST {...{ useSetInputST }}
@@ -63,13 +66,37 @@ export default function TabPanelInput (props: {
         label={labelT}
       />
       <Autocomplete
-        //@ts-expect-error
-        value={multiDots ?? []}
+        value={(multiDots ?? []) as OriginDataObjArr}
+        // readOnly={isBiggerThanShowAllCount}
+        {...(isBiggerThanShowAllCount ? {
+          // style: { pointerEvents: 'none' },
+          freeSolo: true,
+        } : null)}
+        // disabled={dataArrWithPos.length > showAllCount}
         onChange={(e, v) => {
-          setMultiDots(v);
+          const willSet: OriginDataObjArr = [];
+          for (const i of v) {
+            if (typeof i === 'string') {
+              const thisK = i[0] as UVenum;
+              const thisKInd = parseInt(i.slice(1));
+              if (!isSafeInteger(thisKInd)) {
+                continue;
+              }
+              const findIt = dataArrWithPos.find(({ k, kInd }) => k === thisK && kInd === thisKInd);
+              if (findIt) {
+                willSet.push(findIt);
+              }
+            } else {
+              willSet.push(i);
+            }
+          }
+          if (willSet.length === multiDots?.length) {
+            return;
+          }
+          setMultiDots(willSet);
         }}
         multiple
-        options={dataArrWithPos}
+        options={isBiggerThanShowAllCount ? [] : dataArrWithPos}
         getOptionLabel={getDotName}
         renderOption={(props, dotData, { selected }) => {
           return (
@@ -86,7 +113,10 @@ export default function TabPanelInput (props: {
         renderInput={(params) => <AutocompleteRenderInput
           {...params}
           label='Choose Vertices'
-          placeholder="Choose Vertices"
+          {...(isBiggerThanShowAllCount ? null : {
+            placeholder: "Choose Vertices"
+          })}
+        // placeholder="Choose Vertices"
         />}
         disableCloseOnSelect={true}
         autoComplete
@@ -101,12 +131,12 @@ export default function TabPanelInput (props: {
         includeInputInList
         openOnFocus
         selectOnFocus
-        disableClearable={false}
+        // disableClearable={false}
         disabledItemsFocusable={false}
         disableListWrap={false}
         disablePortal={false}
         filterSelectedOptions={false}
-        freeSolo={false}
+      // freeSolo={false}
       />
       <LoadingButton
         // loading={loading || undefined}
