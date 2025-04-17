@@ -1,4 +1,4 @@
-import { Paper, Fab, IconButton } from "@mui/material";
+import { Paper, Fab, IconButton, Tooltip } from "@mui/material";
 import style from './_index.module.scss';
 // import clsx from 'clsx';
 import FullscreenExitRoundedIcon from '@mui/icons-material/FullscreenExitRounded';
@@ -6,7 +6,6 @@ import FullscreenRoundedIcon from '@mui/icons-material/FullscreenRounded';
 import type { Children } from "@/types/children";
 import classNames from 'clsx';
 import { useRef } from "react";
-import { isRightDom } from "../hooks/useGestureFullScreen.mjs";
 const title = "enter page fullscreen";
 export default function ({ children, isInFullScreen, isShow, ...fabProps }: Children & {
   readonly isInFullScreen: boolean;
@@ -26,11 +25,15 @@ export default function ({ children, isInFullScreen, isShow, ...fabProps }: Chil
         className={classNames(style['Fab'], {
           [style['opacity0'] ?? '']: isNotShow
         })}
-        onContextMenu={(e) => {
+        onContextMenu={async (e) => {
           const { current } = ref;
           if (current instanceof HTMLDivElement) {
             const { lastChild, lastElementChild } = current;
             if (lastChild === lastElementChild && lastChild instanceof HTMLDivElement) {
+              const { fullscreenElement } = document;
+              if (fullscreenElement instanceof HTMLElement && fullscreenElement !== lastChild) {
+                await document.exitFullscreen();
+              }
               lastChild.requestFullscreen({
                 navigationUI: 'hide',
               });
@@ -42,11 +45,13 @@ export default function ({ children, isInFullScreen, isShow, ...fabProps }: Chil
         hidden={isNotShow}
         {...fabProps}
       >
-        {/* <Tooltip title="settings" arrow> */}
-        <IconButton size='large'>
-          {isInFullScreen ? <FullscreenExitRoundedIcon fontSize="large" /> : <FullscreenRoundedIcon fontSize="large" />}
-        </IconButton>
-        {/* </Tooltip> */}
+        <Tooltip title={`Left click to ${isInFullScreen ? 'leave' : 'enter'} maximize.\nRight click to enter fullscreen.`} arrow
+          placement="top"
+        >
+          <IconButton size='large'>
+            {isInFullScreen ? <FullscreenExitRoundedIcon fontSize="large" /> : <FullscreenRoundedIcon fontSize="large" />}
+          </IconButton>
+        </Tooltip>
       </Fab>
       {children}
     </Paper>

@@ -315,8 +315,8 @@ export default function BCViz_new () {
 
   useUpdateEffect(() => {
     setTab(
-      isDEV ? TabKey.all :
-        TabKey.table);
+      // isDEV ? TabKey.all :
+      TabKey.table);
     resetSelectMode();
   }, [tableData, selectEngine]);
   useUpdateEffect(() => {
