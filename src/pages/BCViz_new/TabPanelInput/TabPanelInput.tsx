@@ -27,6 +27,7 @@ import { UVenum, uvIndObj } from "@/pages/BCviz/utils";
 import { showAllCount } from "..";
 const { isSafeInteger } = Number;
 const { freeze } = Object;
+const { stringify } = JSON;
 export type UseSetState<T extends Record<string, any>> = typeof useSetState<T>;
 export type UseSetInputST = ReturnType<UseSetState<InputSTSetState>>;
 
@@ -113,9 +114,10 @@ export default function TabPanelInput (props: {
         renderInput={(params) => <AutocompleteRenderInput
           {...params}
           label='Choose Vertices'
-          {...(isBiggerThanShowAllCount ? null : {
-            placeholder: "Choose Vertices"
-          })}
+          placeholder="Please input vertice name"
+        // {...(isBiggerThanShowAllCount ? null : {
+        //   placeholder: "Choose Vertices"
+        // })}
         // placeholder="Choose Vertices"
         />}
         disableCloseOnSelect={true}
@@ -152,7 +154,7 @@ export default function TabPanelInput (props: {
             ...fileNames,
             problem_type: ModesShortcut[mode],
             ...inputST,
-            vertices: JSON.stringify(multiDots?.map(({ k, kInd }) => ([uvIndObj[k], kInd]))),
+            vertices: stringify(multiDots?.map(({ k, kInd }) => ([uvIndObj[k], kInd]))),
           })
             .then((e) => {
               toast.success(`fetch ${mode} success`);

@@ -4,7 +4,7 @@ import { clamp, groupBy, head, isPlainObject, isUndefined, mapValues, orderBy, s
 import type { execTextType, UVReturnType } from "./api";
 import { tanColorContentJsx } from "./Echarts";
 import type { getCommonValueFromTableDataParamers, getCommonValueFromTableDataReturnType, GraphNeighbor, OriginDataObj, OriginDataObjReadonlyArr, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, typeOfGetCommonValueFromTableData } from "../BCviz/types";
-import { getCommonValueFromTableData, getDataArrWithPos, getGraphNeighbor, getGroupByDot, getInitGraphNeighbor, getOneDotNeighbor, marginSize, UVenum, uvIndObj, uvLength, type getDataArrWithPosParameters, type getDataArrWithPosType } from "../BCviz/utils";
+import { getCommonValueFromTableData, getDataArrWithPos, getGraphNeighbor, getGroupByDot, getInitGraphNeighbor, getOneDotNeighbor, marginSize, UVenum, uvIndObj, uvLength, type getDataArrWithPosParameters, type getDataArrWithPosType, type VisualMapSectionSingle } from "../BCviz/utils";
 import { clickMultiDotColor, showAllCount } from ".";
 
 const { freeze, entries, values } = Object;
@@ -69,10 +69,10 @@ export const getDataArrWithPosMutilDotsColor = (dataArrWithPos: PosDataObjArr, m
   const dataArrWithPosMutilDotsColor: PosDataObjArr = dataArrWithPos?.map(item => {
     const { k, kInd } = item;
     const color: PosDataObj['color'] = groupByDotMutilDots[k][kInd] ? clickMultiDotColor : undefined;
-    return ({
+    return color ? ({
       ...item,
-      ...(color ? { color } : null),
-    }) as PosDataObj;
+      color,
+    }) as PosDataObj : item;
   });
   return dataArrWithPosMutilDotsColor;
 };
@@ -186,3 +186,26 @@ export const TabKey2Title: Record<TabKey, string> = freeze({
   [TabKey.result]: "Search Result",
   [TabKey.all]: 'All'
 });
+
+export const dataArrWithPosDrawColorWithVisualMapSection = (dataArrWithPos: PosDataObjArr, visualMapSectionSingle?: VisualMapSectionSingle) => {
+  if (!visualMapSectionSingle) {
+    return dataArrWithPos;
+  }
+  const { start, end, color } = visualMapSectionSingle;
+
+  return dataArrWithPos.map((data, ind) => (ind >= start && ind <= end) ? ({
+    ...data,
+    color,
+  }) : data);
+  // for (let i = start; i <= end; i++) {
+  //   const obj = dataArrWithPos[i];
+  //   if (obj) {
+  //     obj.color = color;
+  //   }
+  // }
+
+};
+
+export const arrayLengthBigThanNum = (num: number | undefined, compareNum: number) => {
+  return !isUndefined(num) && num >= compareNum;
+};

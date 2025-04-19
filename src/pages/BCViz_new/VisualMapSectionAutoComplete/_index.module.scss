@@ -1,0 +1,37 @@
+.Tooltip {
+
+  // padding: unset;
+  // background-color: transparent;
+  &-total {
+    padding: 9q;
+  }
+
+  &-count {
+    // position: relative;
+
+    // &-bg,
+    &-text {
+      padding: 9q;
+      // position: absolute;
+      // top: 0;
+      // left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, .9);
+      // text-shadow: 0 0 9q currentColor;
+    }
+
+    // &-bg {
+    //   opacity: .5;
+    // }
+
+    &::after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 255, 255, .9);
+    }
+  }
+}

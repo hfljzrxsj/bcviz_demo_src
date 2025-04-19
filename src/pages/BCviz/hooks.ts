@@ -1,6 +1,6 @@
 import { useSafeState, useMemoizedFn } from "ahooks";
 import { useMemo, useRef } from "react";
-import { clickCircleFn, doubleClickCircleFn, getCommonValueFromTableData, getSvgSize } from "./utils";
+import { clickCircleFn, getCommonValueFromTableData, getSvgSize } from "./utils";
 import type { ClickCircleProps, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr } from "./types";
 const { values } = Object;
 export default function useBCVizFnHooks () {

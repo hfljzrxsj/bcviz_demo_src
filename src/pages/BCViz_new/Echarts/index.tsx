@@ -1,6 +1,6 @@
-import { useMemo, type ReactNode, type CSSProperties } from "react";
+import { useMemo, type ReactNode, type CSSProperties, useDeferredValue } from "react";
 import type { DataArrWithPos, HSSProps, OriginGraphDataReadonlyArr, OriginGraphDataSuper, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetStateType, getCommonValueFromTableDataReturnType } from "@/pages/BCviz/types";
-import { UVenum, clickToSetSize, doubleClickCircleFnForECharts, getCommonValueFromTableData, getDataArrWithPos, getGraphLinkColor, isEditXFunc } from "@/pages/BCviz/utils";
+import { UVenum, clickToSetSize, doubleClickCircleFnForECharts, getCommonValueFromTableData, getDataArrWithPos, getGraphLinkColor, isEditXFunc, type VisualMapSection } from "@/pages/BCviz/utils";
 import { TabKey, TabKey2Title, getDataArrWithPosWithCommonValueFromTableData, getDotName, getFileIdb, getSymbolSize, maxRadius, minRadius, svgWH, tanContentClass } from "../utils";
 import CommonCharts, { resizeEvent, type AxisPointerComponentOption, type EChartsOption, type GraphSeriesOption, type LineSeriesOption, type MarkAreaComponentOption, type TooltipComponentOption, type onEChartsParam, type onEChartsParamFunc } from "../CommonECharts";
 import { freeze } from "immer";
@@ -40,7 +40,7 @@ const echartsColors: ReadonlyArray<string> = echartsGlobalDefault.color;
 import type { SuperDataType } from "../mockJs";
 import { waitLastEventLoop, waitMiddleEventLoop } from "@/utils";
 import FullScreenChart from "../FullScreenChart";
-const { isSafeInteger } = Number;
+const { isSafeInteger, isNaN, isFinite } = Number;
 const { min, max } = Math;
 const { isArray, from } = Array;
 
@@ -208,7 +208,7 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
   // const isBiggerThanShowAllCount = dataArrWithPos.length > showAllCount;
   const { symbolSizeMax, symbolSizeMin } = getSymbolSizeMaxMin({ isBiggerThanShowAllCount, maxV, minV, dataArrWithPos });
   const symbolSizeBase = (maxRadius - minRadius) / (symbolSizeMax - symbolSizeMin);
-  const getSymbolSize = (v: number) => (v - symbolSizeMin) * symbolSizeBase + minRadius;
+  const getSymbolSize = (symbolSizeMax === symbolSizeMin || isNaN(symbolSizeBase) || !isFinite(symbolSizeBase)) ? () => minRadius : (v: number) => (v - symbolSizeMin) * symbolSizeBase + minRadius;
   const superWidthArr = uniq(graphData.map(({ superWidth }) => superWidth)) as Parameters<typeof getLineStyleWidthFunc>[1];
   const getLineStyleWidth = getLineStyleWidthFunc(isBiggerThanShowAllCount, superWidthArr);
 
@@ -381,8 +381,8 @@ export const inputLabels: Readonly<Partial<Record<Modes, InputSTSetState>>> = fr
     t: 'Minimum vertex count in V'
   },
   [Modes['(p,q)-biclique Counting']]: {
-    s: 'Minimum vertex count in U',
-    t: 'Minimum vertex count in V'
+    s: 'Vertex number in U',
+    t: 'Vertex number in V'
   },
 });
 const toastEmpty = debounce(() => {
@@ -413,8 +413,9 @@ export default function Echarts (props: {
   readonly resultTable: PosDataObjArr | undefined;
   readonly clickEChartDotToAddMultiDots: onEChartsParamFunc;
   readonly superData?: SuperDataType | undefined;
+  readonly visualMapSection: VisualMapSection | undefined;
 } & HSSProps & SVGChartsProps) {
-  const { dataArrWithPos: dataArrWithPosNotWithColor, graphData, size, resultGraph,
+  const { dataArrWithPos, visualMapSection, graphData, size, resultGraph,
     selectMode, useSetInputST,
     setTab, resultTable,
     setSize, isEditX,
@@ -424,13 +425,13 @@ export default function Echarts (props: {
   } = props;
   const isNotGetResult = isUndefined(size);
 
-  const { dataArrWithPos, visualMapSection, sections } = useMemo(() => {
-    if (isEditX) {
-      const { datas, visualMapSection, sections } = doubleClickCircleFnForECharts({ ...props });
-      return { dataArrWithPos: datas, visualMapSection, sections };
-    }
-    return { dataArrWithPos: dataArrWithPosNotWithColor };
-  }, [dataArrWithPosNotWithColor]);
+  // const { dataArrWithPos, visualMapSection, sections } = useMemo(() => {
+  //   if (isEditX) {
+  //     const { datas, visualMapSection, sections } = doubleClickCircleFnForECharts({ ...props });
+  //     return { dataArrWithPos: datas, visualMapSection, sections };
+  //   }
+  //   return { dataArrWithPos: dataArrWithPosNotWithColor };
+  // }, [dataArrWithPosNotWithColor]);
   const lineChartsOption = useMemo(() => {
     if (!dataArrWithPos) {
       return;
@@ -594,7 +595,7 @@ export default function Echarts (props: {
       // }
     } as EChartsOption);
   }, [dataArrWithPos]);
-  const GraphChartsOption = useMemo(() => {
+  const GraphChartsOption = (useMemo(() => {
     // setFalse();
     // setTab(TabKey.table);
     if (!dataArrWithPos) {
@@ -613,14 +614,12 @@ export default function Echarts (props: {
     const option = getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData);
 
     return option;
-  }, [dataArrWithPos, superData]);
+  }, [dataArrWithPos, superData]));
   // console.log(3, performance.now() - start);
 
   const ResultGraphChartsOption = useMemo(() => {
     if (!isNotGetResult && !resultGraph?.length) {
       const label = inputLabels[selectMode];
-      console.log(useSetInputST[0], label);
-
       return {
         title: {
           text: `${selectMode} result is empty`,

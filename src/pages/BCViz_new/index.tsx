@@ -7,20 +7,15 @@ import {
   Paper, Tab, Modal, CircularProgress  // Tabs,
   , Select, MenuItem, FormControl, InputLabel,
   Accordion, AccordionDetails, AccordionSummary,
-  FormHelperText,
   Autocomplete,
-  TextField,
   Tooltip,
-  Divider,
   Skeleton,
-  Chip,
-  Checkbox,
   // FormLabel,
   // FormControlLabel, FormGroup
 } from "@mui/material";
 import { useBoolean, useSafeState, useSetState, useRequest, useLocalStorageState, useMount, useUpdateEffect, useMemoizedFn, useResetState, useEventListener } from "ahooks";
 import { useMemo, type ReactNode, createContext } from "react";
-import { UVenum, doubleClickCircleFn, doubleClickCircleFnForECharts, getCommonValueFromTableData, getDataArrWithPos, getGroupByDot, isEditXFunc } from "../BCviz/utils";
+import { UVenum, doubleClickCircleFnForECharts, getDataArrWithPos, getGroupByDot, isEditXFunc, type VisualMapSection, type VisualMapSectionSingle } from "../BCviz/utils";
 import style from './_index.module.scss';
 import style_old from '../BCviz/_index.module.scss';
 // import { type EChartsOption } from 'echarts';
@@ -28,31 +23,29 @@ import type { InputSTSetState } from "./InputST";
 import { baseURL, getFromST, type execTextType } from "./api";
 import { commonUseRequestParams } from "@/utils/const";
 import clsx from "clsx";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.min.css';
 import SideCollapse from "./SideCollapse";
 import Tool from "../BCviz/Tool";
 import TabPanelInput, { type UseSetInputST } from "./TabPanelInput/TabPanelInput";
 import { isChina } from "./getIntl";
 import { isDEV, isPROD } from "@/utils/isEnv";
-import { findTopInOrder, getDataArrWithPosForECharts, getDataArrWithPosMutilDotsColor, getDataArrWithPosWithCommonValueFromTableData, getDotName, getTableDataWithIndOrFilter, getTooltipTitle, Modes, ModesShortcut, TabKey2Title, tanContentClass } from "./utils";
-import type { HSSProps, OriginDataObjReadonlyArr, OriginDataObjWithIndex, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetSizeProps, SetStateType, SizeProps } from "../BCviz/types";
+import { arrayLengthBigThanNum, dataArrWithPosDrawColorWithVisualMapSection, getDataArrWithPosMutilDotsColor, getDataArrWithPosWithCommonValueFromTableData, getTableDataWithIndOrFilter, getTooltipTitle, Modes, ModesShortcut, TabKey2Title, tanContentClass } from "./utils";
+import type { HSSProps, OriginDataObjReadonlyArr, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetSizeProps, SetStateType } from "../BCviz/types";
 import SVGCharts from "./SVGCharts";
 import useBCVizFnHooks from "../BCviz/hooks";
 import Echarts, { tanColorContentJsx } from "./Echarts";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Settings, { type keyofRenderingEngine } from "./Settings";
-import { isUndefined, every, filter, negate, omit } from "lodash";
+import { isUndefined, every } from "lodash";
 import { TabKey } from "./utils";
 import InputSize from "./InputSize";
 import AutocompleteRenderInput from "./AutoCompleteRenderInput";
 import AutoCompleteRenderOptionMenuItem from "./AutoCompleteRenderOption";
-import CheckBoxOutlineBlankIcon from '@mui/icons-material/CheckBoxOutlineBlank';
-import CheckBoxIcon from '@mui/icons-material/CheckBox';
-import type { onEChartsParam, onEChartsParamFunc } from "./CommonECharts";
+import type { onEChartsParamFunc } from "./CommonECharts";
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
-import { parseGraphDataSuper, parseTableData } from "../BCviz/FileUpload";
 import { getSuperDataPromise } from "./mockJs";
+import VisualMapSectionAutoComplete from "./VisualMapSectionAutoComplete";
 export const uvHighlightColor = 'tan';
 export const clickMultiDotColor = 'red';
 const { isSafeInteger } = Number;
@@ -78,10 +71,6 @@ export const enum path {
 //   fontWeight: 'bold',
 //   color: 'Tan',
 // });
-
-const arrayLengthBigThanNum = (num: number | undefined, compareNum: number) => {
-  return !isUndefined(num) && num >= compareNum;
-};
 
 const ValueToAccordion = ({
   title,
@@ -226,6 +215,7 @@ export default function BCViz_new () {
 
   const isEditX = useMemo(() => isEditXFunc(selectMode), [selectMode]);
   const [selectShowItem, setSelectShowItem] = useSafeState<number>(0);
+  const [selectShowItemHSS, setSelectShowItemHSS] = useSafeState<number>(0);
   const useMultiDots = useSafeState<OriginDataObjReadonlyArr | undefined>([]);
 
   const [multiDots, setMultiDots] = useMultiDots;
@@ -233,7 +223,6 @@ export default function BCViz_new () {
 
   const tableData: OriginDataObjWithIndexArr = useMemo(() => getTableDataWithIndOrFilter(isShowAll, originTableData,), [originTableData, isShowAll]);
   const { size,
-
     UV, dataThisMode,
     dataArr,
     selectShowData,
@@ -297,6 +286,7 @@ export default function BCViz_new () {
       params,
     };
   }, [dataFromST, selectMode, selectShowItem, tableData]);
+  const dataArrLength = dataArr?.length;
   const isEngineECharts = selectEngine === 'ECharts Engine';
   const isNotGetResult = isUndefined(size);
   const setSize: SetSizeProps['setSize'] = useMemoizedFn((size: execTextType['size']) => {
@@ -324,29 +314,30 @@ export default function BCViz_new () {
     // mutate(undefined);
   }, [tableData]);
 
+  const dataArrWithPosWithoutColor = useMemo(() => {
+    return getDataArrWithPos(tableData, graphData, commonValueFromTableData, svgHeight);
+  }, [tableData, graphData, commonValueFromTableData, svgHeight]);
+
   const { dataArrWithPos, visualMapSection } = useMemo(() => {
     // setTrue();
     // const getDataArrWithPosParams: Parameters<typeof getDataArrWithPos> = [tableDataWithIndOrFilter, graphData, commonValueFromTableData, svgHeight];
 
     // const dataArrWithPos = isEngineECharts ? getDataArrWithPosForECharts(...getDataArrWithPosParams) : getDataArrWithPos(...getDataArrWithPosParams);
-    const dataArrWithPos = getDataArrWithPos(tableData, graphData, commonValueFromTableData, svgHeight);
+    const dataArrWithPos = dataArrWithPosWithoutColor;
     if (isEditX) {
       // return doubleClickCircleFn({ isEditX, dataArrWithPos, commonValueFromTableData, size, setSize });
       // return doubleClickCircleFnForECharts({ isEditX, dataArrWithPos, commonValueFromTableData, size }).datas;
       const { datas, visualMapSection } = doubleClickCircleFnForECharts({ isEditX, dataArrWithPos, size, commonValueFromTableData });
-      return { dataArrWithPos: datas, visualMapSection };
+      const data = (selectShowItemHSS === 0 || !visualMapSection) ? datas : dataArrWithPosDrawColorWithVisualMapSection(dataArrWithPos, visualMapSection[selectShowItemHSS - 1]);
+      return { dataArrWithPos: data, visualMapSection };
     }
-
-    // if (!UV) {
-    //   return dataArrWithPos;
-    // }
     const dataArrWithPosAndUVColor: PosDataObjArr = UV ? dataArrWithPos?.map(item => {
       const { k, kInd } = item;
       const color: PosDataObj['color'] = UV[k]?.includes(kInd) ? uvHighlightColor : undefined;
-      return ({
+      return color ? ({
         ...item,
-        ...(color ? { color } : null),
-      }) as PosDataObj;
+        color,
+      }) as PosDataObj : item;
     }) : dataArrWithPos;
     const dataArrWithPosAndMutilDotsColor: PosDataObjArr = getDataArrWithPosMutilDotsColor(dataArrWithPosAndUVColor, multiDots);
     return { dataArrWithPos: dataArrWithPosAndMutilDotsColor };
@@ -356,6 +347,7 @@ export default function BCViz_new () {
     selectMode,
     size,
     multiDots,
+    selectShowItemHSS,
   ]);
   const getResult = useMemoizedFn(() => {
     if (isEditX || !UV) {
@@ -416,7 +408,7 @@ export default function BCViz_new () {
   const clickEChartDotToAddMultiDots: onEChartsParamFunc = useMemoizedFn((eCElementEvent) => {
     const {
       // componentSubType,
-      // componentType,
+      componentType,
       dataIndex,
       name,
       // seriesType,
@@ -425,6 +417,9 @@ export default function BCViz_new () {
 
     } = eCElementEvent as CallbackDataParams;
     if (isEditX) {
+      if (componentType === "markArea") {
+        setSelectShowItemHSS(dataIndex + 1);
+      }
       return;
     }
     if (isSafeInteger(dataIndex) && name && isSafeInteger(value) && typeof value === 'number') {
@@ -563,11 +558,12 @@ export default function BCViz_new () {
                 </TabPanel>
               </TabContext>
             </Paper>
+
             {dataArr &&
               (
                 (
-                  arrayLengthBigThanNum(dataArr?.length, 2))) ? <Paper elevation={24} className={style['Select'] ?? ''}>
-              <Tooltip title={<>Count: <span className={tanContentClass}>{dataArr.length}</span></>} arrow placement="right"><Autocomplete
+                  arrayLengthBigThanNum(dataArrLength, 2))) ?
+              <Paper elevation={24} className={style['Select'] ?? ''}><Tooltip title={<>Count: <span className={tanContentClass}>{dataArrLength}</span></>} arrow placement="right"><Autocomplete
                 autoComplete
                 autoCapitalize="words"
                 autoFocus
@@ -611,13 +607,13 @@ export default function BCViz_new () {
                     ...others } = props;
                   return <Tooltip title={getTooltipTitle(option)} arrow placement="right"><AutoCompleteRenderOptionMenuItem {...props} >{label ?? `Rank ${state.index + 1}`}</AutoCompleteRenderOptionMenuItem></Tooltip>;
                 }}
-              /></Tooltip>
-
-              {/* {isUndefined(count) ? null : <h4>
-                The number of ({params.s},{params.t})-bicliques is: {numOfData}
-              </h4>} */}
-            </Paper> : <></>}
-          </Paper>
+              /></Tooltip></Paper>
+              : null}
+            {(isEditX) ? <VisualMapSectionAutoComplete
+              setSelectShowItem={setSelectShowItemHSS}
+              selectShowItem={selectShowItemHSS}
+              {...{ visualMapSection, dataArrWithPos, }} /> : null}
+          </Paper >
         </SideCollapse>
         <Paper className={style['Main-Mid'] ?? ''} elevation={24}>
           <TabContext value={tab}>
@@ -674,7 +670,7 @@ export default function BCViz_new () {
               selectMode, useSetInputST,
               setTab, resultTable, setSize, isEditX,
               commonValueFromTableData, clickEChartDotToAddMultiDots, dataFromST,
-              superData,
+              superData, visualMapSection,
             }} /> : <SVGCharts
               {...{
                 commonValueFromTableData, graphData, dataArrWithPos, isEditX, svgRef, svgSize,

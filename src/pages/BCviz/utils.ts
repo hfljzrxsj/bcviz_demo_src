@@ -387,58 +387,30 @@ export const doubleClickCircleFn = ({
       // curData = drawDotData[++i];
       // curVal = getNumFromData(curData);
     }
-    willSetDrawDotData.push(...drawDotDataGroupByV.map(data => ({
+    const color = colors_[(colorInd) % colorLength] ?? '';
+    willSetDrawDotData.push(...drawDotDataGroupByV.map(data => color ? ({
       ...data,
-      color: colors_[(colorInd) % colorLength] ?? ''
-    }) as PosDataObj));
+      color,
+    }) as PosDataObj : data));
     colorInd++;
   }
 
   return (willSetDrawDotData.map(i => {
-    return {
+    return (i.v >= size) ? {
       ...i,
-      isHighlight: (i.v >= size),
-    };
+      isHighlight: true,
+    } : i;
   }));
   // return v;
 };
 type PosDataObjArrNotReadonly = PosDataObj[];
 type DrawDotDataSection = PosDataObjArr[];
-const doubleClickCircleFnForEChartsSubFunc = ({
-  curVal,
-  size,
-  drawDotDataGroupByV,
-  curData,
-  drawDotDataSection,
-  colors = colors_,
-  colorInd,
-  willSetDrawDotData,
-}: {
-  curVal: ReturnType<typeof getNumFromData>,
-  drawDotDataGroupByV: PosDataObjArrNotReadonly,
-  curData: PosDataObj,
-  drawDotDataSection: DrawDotDataSection,
-  colorInd: number,
-  willSetDrawDotData: PosDataObjArrNotReadonly,
-} & ClickCircleProps) => {
-  if (isNil(size)) {
-    return 0;
-  }
-  if (curVal >= size) {
-    drawDotDataGroupByV.push(curData);
-    drawDotDataSection.push([...drawDotDataGroupByV]);
-    const color = colors[colorInd % colorLength] ?? '';
-    willSetDrawDotData.push(...drawDotDataGroupByV.map(i => ({
-      ...i,
-      color,
-    })));
-    drawDotDataGroupByV.length = 0;
-    return 1;
-  } else {
-    willSetDrawDotData.push(curData);
-    return 0;
-  }
-};
+export interface VisualMapSectionSingle {
+  readonly start: number;
+  readonly end: number;
+  readonly color: (typeof colors_)[number];
+}
+export type VisualMapSection = ReadonlyArray<VisualMapSectionSingle>;
 export const doubleClickCircleFnForECharts = (props: ClickCircleProps
 ) => {
   const {
@@ -460,11 +432,7 @@ export const doubleClickCircleFnForECharts = (props: ClickCircleProps
   const willSetDrawDotData: PosDataObjArrNotReadonly = [];
   let colorInd = 0;
   const drawDotDataSections: DrawDotDataSection = [];  //分成区间
-  const visualMapSection: {
-    readonly start: number;
-    readonly end: number;
-    readonly color: (typeof colors)[number];
-  }[] = [];
+  const visualMapSection: VisualMapSectionSingle[] = [];
   // example2 size=6
   const drawDotDataGroupByV: PosDataObjArrNotReadonly = [];
   const drawDotDataSection: number[] = [];
@@ -490,10 +458,10 @@ export const doubleClickCircleFnForECharts = (props: ClickCircleProps
           color,
           // datas:drawDotDataGroupByV,
         });
-        willSetDrawDotData.push(...drawDotDataGroupByV.map(i => ({
+        willSetDrawDotData.push(...drawDotDataGroupByV.map(i => color ? ({
           ...i,
           color,
-        })));
+        }) : i));
         drawDotDataGroupByV.length = 0;
         drawDotDataSection.length = 0;
         colorInd++;
@@ -514,7 +482,7 @@ export const doubleClickCircleFnForECharts = (props: ClickCircleProps
       doubleClickCircleFnForEChartsSubFunc();
     }
   }
-  return { datas: willSetDrawDotData, sections: drawDotDataSections, visualMapSection, };
+  return { datas: willSetDrawDotData, sections: drawDotDataSections, visualMapSection: (visualMapSection as VisualMapSection), };
 };
 export const clickCircleFn = (({ isEditX }: ClickCircleProps) => (data: PosDataObj) => () => {
   if (!isEditX) {

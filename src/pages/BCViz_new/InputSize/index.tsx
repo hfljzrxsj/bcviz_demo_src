@@ -80,6 +80,7 @@ export default function InputSize (props: {
       </FormControl>
       <Tooltip arrow
         title={isSizeUndefined ? 'Set size to undefined' : `${Modes['Hierarchical Subgraphs Search']} with size is ${size}`}
+        placement="right"
       >
         <Button fullWidth
           variant="contained"

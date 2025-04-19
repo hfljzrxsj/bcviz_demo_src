@@ -8,6 +8,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { filter, isUndefined, negate, omitBy } from 'lodash';
+import { forwardRef } from 'react';
 // type TT<T> = AutocompleteProps<T, true, true, false, "div">['renderOption'];
 // const a = ({ autoFocus,
 //   tabIndex,
@@ -36,14 +37,14 @@ import { filter, isUndefined, negate, omitBy } from 'lodash';
 // console.log(isNotU(1));
 
 
-export default function AutoCompleteRenderOptionMenuItem ({
+export default forwardRef<HTMLLIElement, Parameters<NonNullable<AutocompleteProps<unknown, true, true, false>['renderOption']>>[0] & Children>(({
   children,
   autoFocus,
   tabIndex,
   className,
   style,
   ...others
-}: Parameters<NonNullable<AutocompleteProps<unknown, true, true, false>['renderOption']>>[0] & Children) {
+}, ref) => {
 
   return <MenuItem
     {...others}
@@ -55,6 +56,7 @@ export default function AutoCompleteRenderOptionMenuItem ({
       style,
     }, isUndefined)
     }
+    ref={ref}
   // {...fromEntries(entries({
   //   autoFocus,
   //   tabIndex,
@@ -66,4 +68,4 @@ export default function AutoCompleteRenderOptionMenuItem ({
     {children}
     {/* </div> */}
   </MenuItem>;
-};
+});
