@@ -118,12 +118,12 @@ const fileUploadSimpleProps = freeze([
   {
     title: TabKey2Title[TabKey.graph],
     parseData: parseGraphData,
-    defaultTxt: ['example.txt', 'writer.txt', 'marvel.txt']
+    defaultTxt: ['example.txt', 'writer.txt', 'marvel.txt', 'paper.txt']
   },
   {
     title: TabKey2Title[TabKey.table],
     parseData: parseTableData,
-    defaultTxt: ['example_cohesion.txt', 'writer_cohesion.txt', 'marvel_cohesion.txt']
+    defaultTxt: ['example_cohesion.txt', 'writer_cohesion.txt', 'marvel_cohesion.txt', 'paper_cohesion.txt']
   }
 ]);
 const throwError = (str = 'searchParams is not enough') => {

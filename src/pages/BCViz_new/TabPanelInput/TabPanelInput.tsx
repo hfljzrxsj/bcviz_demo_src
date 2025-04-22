@@ -154,7 +154,7 @@ export default function TabPanelInput (props: {
             ...fileNames,
             problem_type: ModesShortcut[mode],
             ...inputST,
-            vertices: stringify(multiDots?.map(({ k, kInd }) => ([uvIndObj[k], kInd]))),
+            vex_list: stringify(multiDots?.map(({ k, kInd }) => ([uvIndObj[k], kInd]))),
           })
             .then((e) => {
               toast.success(`fetch ${mode} success`);

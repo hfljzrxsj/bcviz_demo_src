@@ -7,8 +7,12 @@ import { parseStringToObjArray } from "./parsePQB";
 import type { InputSTSetState } from "./InputST";
 import { waitOnLoadEventLoop } from "@/utils";
 import { isDEV } from "@/utils/isEnv";
+import { parseGraphDataSuper, parseTableData } from "../BCviz/FileUpload";
+import { pickBy, negate, isUndefined, omitBy } from "lodash";
+import type { OriginDataObjReadonlyArr, OriginGraphDataSuperReadonlyArr } from "../BCviz/types";
 const { error } = console;
 const { isSafeInteger } = Number;
+const { } = Object;
 export const baseURL = 'http://47.99.129.94';
 waitOnLoadEventLoop(() => {
   const { origin, protocol, port, hostname, } = location;
@@ -105,6 +109,7 @@ const execTextFromApi = (input: string): Partial<Record<Modes, getFromSTReturn>>
   },
   [Modes['Maximal Biclique Enumeration']]: parseStringToObjArray(input),
   [Modes['(p,q)-biclique Counting']]: parseStringToObjArray(input),
+  // '':''
 });
 // interface getFromSTReturn extends Record<Modes, object> {
 //   'Maximum Biclique': MEBType;
@@ -117,10 +122,10 @@ export interface FileNames {
   readonly dataset: string;
   readonly BCviz_file: string;
 }
-// Record<string, string> &
 type GetFromSTParams = FileNames
   & InputSTSetState & {
-    problem_type: (typeof ModesShortcut)[Modes];
+    readonly problem_type: (typeof ModesShortcut)[Modes];
+    readonly vex_list?: string;
   };
 // export const getFromSTOld = async (mode: Modes,
 //   oldData: Datas | undefined,
@@ -179,6 +184,28 @@ type GetFromSTParams = FileNames
 //   });
 // };
 //| Required<Parameters<typeof axios.get>>[1]['params'] & Record<string, string | number>
+// export const isRecordString2 = (v: GetFromSTParams): v is Record<string, string> => true;
+
+export const getSearchBCviz = async <T,> (params: GetFromSTParams) => {
+  const url = `/api/BCviz/v5`;
+  // const key = sha1().update(`${url}?${new URLSearchParams(params)}`, 'hex').digest('hex');
+  const paramsRecordString2: Record<string, string> = omitBy(params, isUndefined);
+  const key = `${url}?${new URLSearchParams(paramsRecordString2)}`;
+  const data = await getFileIdb<T>(key).catch(() => axios.get<string>(url, {
+    responseType: 'text',
+    params,
+  }).then(e => {
+    const { data } = e;
+    return data;
+  }, (reason) => {
+    error(reason);
+    throw new Error(reason);
+  })).catch((reason) => {
+    error(reason);
+    throw new Error(reason);
+  });
+  return { data, key };
+};
 export const getFromST = async (mode: Modes, oldData: Datas | undefined, params: GetFromSTParams) => {
   // if (isDEV) {
   //   await new Promise(resolve => {
@@ -191,29 +218,38 @@ export const getFromST = async (mode: Modes, oldData: Datas | undefined, params:
   //     [mode]: mockText(),
   //   };
   // }
-  const url = `/api/BCviz/v3`;
+  // const url = `/api/BCviz/v5`;
   // const key = sha1().update(`${url}?${new URLSearchParams(params)}`, 'hex').digest('hex');
-  const key = `${url}?${new URLSearchParams({
-    ...params,
-    problem: ModesShortcut[mode],
-  })}`;
-  const data = await getFileIdb<execTextType>(key).catch(() => axios.get<string>(url, {
-    responseType: 'text',
-    params,
-  }).then(e => {
-    const { data } = e;
-    const willResolveData = {
-      ...execTextFromApi(data)[mode],
-      ...params,
-    };
-    createOrAddIdb({ ...idbCommonArgs, data: willResolveData, IDBValidKey: key });
-    return willResolveData;
-  }, (reason) => {
-    error(reason);
-    throw new Error(reason);
-  })).catch((reason) => {
-    error(reason);
-    throw new Error(reason);
+  // const paramsRecordString2: Record<string, string> = omitBy(params, isUndefined);
+  // const key = `${url}?${new URLSearchParams(paramsRecordString2)}`;
+  // const data = await getFileIdb<execTextType>(key).catch(() => axios.get<string>(url, {
+  //   responseType: 'text',
+  //   params,
+  // }).then(e => {
+  //   const { data } = e;
+  //   const willResolveData = {
+  //     ...execTextFromApi(data)[mode],
+  //     ...params,
+  //   };
+  //   createOrAddIdb({ ...idbCommonArgs, data: willResolveData, IDBValidKey: key });
+  //   return willResolveData;
+  // }, (reason) => {
+  //   error(reason);
+  //   throw new Error(reason);
+  // })).catch((reason) => {
+  //   error(reason);
+  //   throw new Error(reason);
+  // });
+  const data = await getSearchBCviz<execTextType>(params).then(({ data, key }) => {
+    if (typeof data === 'string') {
+      const willResolveData = {
+        ...execTextFromApi(data)[mode],
+        ...params,
+      };
+      createOrAddIdb({ ...idbCommonArgs, data: willResolveData, IDBValidKey: key });
+      return willResolveData;
+    }
+    return data;
   });
   // const data = await getIdb<StoreType>({
   //   ...idbCommonArgs,
@@ -236,8 +272,27 @@ export const getFromST = async (mode: Modes, oldData: Datas | undefined, params:
     ...oldData,
     ...(data ? { [mode]: data, } : null),
   });
-}
-/*
-Query功能再加一个选择项，(p,q)-biclique enumeration，然后他的s,t参数改成
-p: vertex number in U (U的顶点数), q: vertex number in V (V的顶点数)
-*/
+};
+interface SuperDataType {
+  readonly tableData: OriginDataObjReadonlyArr;
+  readonly graphData: OriginGraphDataSuperReadonlyArr;
+};
+export const getSG = (params: GetFromSTParams) => {
+  const data = getSearchBCviz<SuperDataType>(params).then(({ data, key }) => {
+    if (typeof data === 'string') {
+      const arr = data.trim().split('\n');
+      const superVertexStart = arr.indexOf('super vertex:');
+      const superEdgeStart = arr.indexOf('super edge:');
+      const tableDataStr = arr.slice(superVertexStart + 1, superEdgeStart - 1).join('\n');
+      const graghDataStr = arr.slice(superEdgeStart + 1).join('\n');
+      const willResolveData: SuperDataType = {
+        tableData: parseTableData(tableDataStr),
+        graphData: parseGraphDataSuper(graghDataStr)
+      };
+      createOrAddIdb({ ...idbCommonArgs, data: willResolveData, IDBValidKey: key });
+      return willResolveData;
+    }
+    return data;
+  });
+  return data;
+};

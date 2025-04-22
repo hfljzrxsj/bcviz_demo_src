@@ -15,12 +15,12 @@ import {
 } from "@mui/material";
 import { useBoolean, useSafeState, useSetState, useRequest, useLocalStorageState, useMount, useUpdateEffect, useMemoizedFn, useResetState, useEventListener } from "ahooks";
 import { useMemo, type ReactNode, createContext } from "react";
-import { UVenum, doubleClickCircleFnForECharts, getDataArrWithPos, getGroupByDot, isEditXFunc, type VisualMapSection, type VisualMapSectionSingle } from "../BCviz/utils";
+import { UVenum, doubleClickCircleFnForECharts, getDataArrWithPos, getGroupByDot, isEditXFunc } from "../BCviz/utils";
 import style from './_index.module.scss';
 import style_old from '../BCviz/_index.module.scss';
 // import { type EChartsOption } from 'echarts';
 import type { InputSTSetState } from "./InputST";
-import { baseURL, getFromST, type execTextType } from "./api";
+import { baseURL, getFromST, type execTextType, getSG } from "./api";
 import { commonUseRequestParams } from "@/utils/const";
 import clsx from "clsx";
 import { toast } from 'react-toastify';
@@ -44,7 +44,6 @@ import AutocompleteRenderInput from "./AutoCompleteRenderInput";
 import AutoCompleteRenderOptionMenuItem from "./AutoCompleteRenderOption";
 import type { onEChartsParamFunc } from "./CommonECharts";
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
-import { getSuperDataPromise } from "./mockJs";
 import VisualMapSectionAutoComplete from "./VisualMapSectionAutoComplete";
 export const uvHighlightColor = 'tan';
 export const clickMultiDotColor = 'red';
@@ -161,7 +160,7 @@ export default function BCViz_new () {
   const [isModalOpen] = useBoolean(false);
   const { tableData: originTableData, setTableData, graphData, setGraphData,
     svgSize, commonValueFromTableData, svgRef, } = useBCVizFnHooks();
-  const { data: superData, runAsync: getSuperData, mutate: mutateSuperData } = useRequest(getSuperDataPromise, {
+  const { data: superData, runAsync: getSuperData, mutate: mutateSuperData } = useRequest(getSG, {
     ...commonUseRequestParams,
     manual: true,
   });
@@ -170,7 +169,14 @@ export default function BCViz_new () {
     mutate(undefined);
     if (originTableData) {
       if (isBiggerThanShowAllCount) {
-        getSuperData();
+        const meaninglessStr = '1';
+        getSuperData({
+          ...fileNames,
+          s: meaninglessStr,
+          t: meaninglessStr,
+          problem_type: 'SG',
+          vex_list: (10).toString(),
+        });
       } else {
         mutateSuperData(undefined);
       }

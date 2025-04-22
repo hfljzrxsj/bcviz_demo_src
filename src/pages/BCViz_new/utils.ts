@@ -9,13 +9,13 @@ import { clickMultiDotColor, showAllCount } from ".";
 
 const { freeze, entries, values } = Object;
 const { max } = Math;
-export const isUseIdbCache = <T = object> (res: T | undefined): res is T => Boolean((isPROD || false) && res && isPlainObject(res));
+export const isUseIdbCache = <T = object> (res: T | undefined): res is T => Boolean((isPROD || true) && res && isPlainObject(res));
 
 export const enum Modes {
   'Maximum Biclique' = 'Maximum Biclique',
   'Maximal Biclique Enumeration' = 'Maximal Biclique Enumeration',
   '(p,q)-biclique Counting' = '(p,q)-biclique Counting',
-  'Hierarchical Subgraphs Search' = 'Hierarchical Subgraphs Search'
+  'Hierarchical Subgraphs Search' = 'Hierarchical Subgraphs Search',
 }
 export const ModesShortcut: Record<Modes, string> = freeze(({
   'Maximum Biclique': 'MEB',

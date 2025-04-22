@@ -20,6 +20,63 @@ $t3: linear-gradient(hsla(0, 100%, 75%, 0.8),
 $t4: linear-gradient(#f9ccff, #e6bbf9, #9ec6f9, #55e6ee, #91f5d1, #f9ffbf);
 $t5: linear-gradient(#652487, #443ac3, #0174b7, #04988e);
 
+%t6 {
+  $t7: linear-gradient(45deg, var(--light-primary), var(--light-info), var(--light-success), var(--light-warning), var(--light-danger));
+
+  :root {
+    --muted: #B5B5C3;
+    --gray: #7E8299;
+    --gray-dark: #3F4254;
+    --primary: #3699FF;
+    --light-primary: #f2f7ff;
+    --secondary: #E4E6EF;
+    --light-gray: #EBEDF3;
+    --success: #1BC5BD;
+    --light-success: #C9F7F5;
+    --info: #8950FC;
+    --light-info: #EEE5FF;
+    --warning: #FFA800;
+    --light-warning: #FFF4DE;
+    --danger: #F64E60;
+    --light-danger: #FFE2E5;
+    --light: #F3F6F9;
+    --dark: #181C32;
+    --light-dark: #D1D3E0;
+    --dark-blue: #1f3b7b;
+  }
+
+  :root {
+    --blue: #007bff;
+    --indigo: #6610f2;
+    --purple: #6f42c1;
+    --pink: #e83e8c;
+    --red: #dc3545;
+    --orange: #fd7e14;
+    --yellow: #ffc107;
+    --green: #28a745;
+    --teal: #20c997;
+    --cyan: #17a2b8;
+    --white: #fff;
+    --gray: #6c757d;
+    --gray-dark: #343a40;
+    --primary: #007bff;
+    --secondary: #6c757d;
+    --success: #28a745;
+    --info: #17a2b8;
+    --warning: #ffc107;
+    --danger: #dc3545;
+    --light: #f8f9fa;
+    --dark: #343a40;
+    --breakpoint-xs: 0;
+    --breakpoint-sm: 576px;
+    --breakpoint-md: 768px;
+    --breakpoint-lg: 992px;
+    --breakpoint-xl: 1200px;
+    --font-family-sans-serif: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    --font-family-monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  }
+}
+
 //颜色
 /*
 1. react-toast -> 官网、:root的css变量
