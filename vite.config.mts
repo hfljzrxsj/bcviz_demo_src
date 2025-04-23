@@ -180,7 +180,7 @@ const serverOptions: ServerOptions & PreviewOptions = {
   // origin: 'http://127.0.0.1:5173/', // 用于定义开发调试阶段生成资产的 origin
   'proxy': {
     '/api': {
-      target: 'http://47.99.129.94',
+      target: 'http://117.72.219.9',
       'changeOrigin': true,
       // 'secure': true
       // 'rewrite': (path) => path.replace(/^\/api/u, '')

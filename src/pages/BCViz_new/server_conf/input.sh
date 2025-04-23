@@ -20,9 +20,9 @@ sudo chmod --recursive 777 /var/run/fcgiwrap.socket
 
 # codearts-cangjie /etc/nginx/sites-available/
 
-sudo chown -R --dereference -L --recursive root:root /usr/lib/
-sudo mkdir /usr/lib/BCviz/
-sudo touch /usr/lib/BCviz/test.cgi
+# sudo chown -R --dereference -L --recursive root:root /usr/lib/
+# sudo mkdir /usr/lib/BCviz/
+# sudo touch /usr/lib/BCviz/test.cgi
 # codearts-cangjie /usr/lib/BCviz/
 sudo chmod --recursive 777 /etc/nginx/sites-available/search-BCviz/MBS
 
@@ -39,7 +39,7 @@ sudo nginx -t
 sudo systemctl reload nginx
 
 
-curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
+sudo curl -s https://packagecloud.io/install/repositories/github/git-lfs/script.deb.sh | sudo bash
 sudo apt-get install git-lfs
 
 curl "http://127.0.0.1/api/BCviz/v3?dataset=example.txt&BCviz_file=example_cohesion.txt&s=1&t=1&problem_type=MEB"

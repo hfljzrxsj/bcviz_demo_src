@@ -357,9 +357,8 @@ export default function FileUpload (props: FileUploadProps) {
 // export { type NullValue };
 
 /* 马上要做的：
-3. 如果是超图，Tab标题应该标注超图
-4. Charts在一起，可缩放分割。使用Select组件（src\pages\Test\SelectChip\index.tsx）。每次更改Select，需要事件循环末期dispatchEvent resize
-5. HSS用AutoComplete分组显示（all(-1)、1、2、3...），src\pages\BCViz_new\Echarts\index.tsx的visualMapSection不需要重新计算，从外面传入即可
+1. 如果是超图，Tab标题、ECharts左上角title应该标注超图
+2. 自定义绘制图
 
   */
 // 在别的Modes也要显示size 的直线

@@ -13,7 +13,7 @@ import type { OriginDataObjReadonlyArr, OriginGraphDataSuperReadonlyArr } from "
 const { error } = console;
 const { isSafeInteger } = Number;
 const { } = Object;
-export const baseURL = 'http://47.99.129.94';
+export const baseURL = 'http://117.72.219.9';
 waitOnLoadEventLoop(() => {
   const { origin, protocol, port, hostname, } = location;
   if (origin === baseURL
@@ -187,7 +187,7 @@ type GetFromSTParams = FileNames
 // export const isRecordString2 = (v: GetFromSTParams): v is Record<string, string> => true;
 
 export const getSearchBCviz = async <T,> (params: GetFromSTParams) => {
-  const url = `/api/BCviz/v5`;
+  const url = `/api/MBS/v1`;
   // const key = sha1().update(`${url}?${new URLSearchParams(params)}`, 'hex').digest('hex');
   const paramsRecordString2: Record<string, string> = omitBy(params, isUndefined);
   const key = `${url}?${new URLSearchParams(paramsRecordString2)}`;
