@@ -160,6 +160,7 @@ export default function BCViz_new () {
   const [isModalOpen] = useBoolean(false);
   const { tableData: originTableData, setTableData, graphData, setGraphData,
     svgSize, commonValueFromTableData, svgRef, } = useBCVizFnHooks();
+
   const { data: superData, runAsync: getSuperData, mutate: mutateSuperData } = useRequest(getSG, {
     ...commonUseRequestParams,
     manual: true,
@@ -653,10 +654,12 @@ export default function BCViz_new () {
                 >
                   <CustomTab tabKey={TabKey.result} disabled={isNotGetResult
                     // || isEditX
-                  } className={
-                    clsx({ [style['Tab'] ?? '']: !isNotGetResult })
-                    // style['Tab'] ?? ''
-                  } />
+                  }
+                  // className={
+                  // clsx({ [style['Tab'] ?? '']: !isNotGetResult })
+                  // // style['Tab'] ?? ''
+                  // }
+                  />
                 </Tooltip>
                 {isEngineECharts ? <CustomTab tabKey={TabKey.all} /> : null}
               </TabList>

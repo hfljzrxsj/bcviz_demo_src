@@ -76,7 +76,7 @@ export default function InputST ({
       autoCapitalize='on'
       /*
           用途：控制移动端键盘的 ​Enter 键显示文本，优化用户输入体验。
-       可选值：
+      可选值：
           "enter"：默认显示“换行”或 ↵。
           "done"：显示“完成”。
           "go"：显示“前往”。
@@ -88,7 +88,7 @@ export default function InputST ({
       translate='yes' //控制元素内容是否应被浏览器自动翻译。
       /*
             用途：控制元素内容是否允许被用户选中。
-       可选值：
+      可选值：
       
           "on"：禁止选中内容。
           "off"：允许选中内容。
@@ -96,7 +96,7 @@ export default function InputST ({
       unselectable='on'
       /*
       用途：控制虚拟键盘类型，优化不同输入场景的体验。
-       可选值：
+      可选值：
           "none"：无虚拟键盘（需手动触发）。
           "text"：默认文本键盘。
           "tel"：电话号码键盘（含数字和符号）。

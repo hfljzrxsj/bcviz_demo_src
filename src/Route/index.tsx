@@ -2,31 +2,30 @@ import {
   Route, Routes,
 } from 'react-router-dom';
 import BCViz_new from '@/pages/BCViz_new';
-// import Virtualize from '@/pages/BCViz_new/TestReactWindow/File';
+import BCviz_Edit from '@/pages/BCviz_Edit';
+import { Suspense, lazy } from 'react';
+import { Backdrop, CircularProgress } from '@mui/material';
+
 // import { useSafeState } from 'ahooks';
 // import { useEffect } from 'react';
 
-// const Test = () => {
-//   const [state, setState] = useSafeState('');
-//   const [o, setO] = useSafeState('');
-//   const dep: Parameters<typeof useEffect>[1] = [state];
-//   useEffect(() => {
-//     console.log(state, o);
+// const BCviz_EditLoadable = lazy(() => import('@/pages/BCviz_Edit'));
 
-//   }, dep);
-//   return <>
-//     <input onChange={e => setState(e.target.value)} />
-//     <input onChange={e => setO(e.target.value)} />
-//   </>;
-// };
 export default function MyRoute () {
   return (
     <Routes>
+      {/* <Route
+        index
+        // element={<Suspense fallback={<Backdrop open><CircularProgress /></Backdrop>}>
+        //   <BCviz_EditLoadable />
+        // </Suspense>}
+        element={<BCviz_Edit />}
+      /> */}
       <Route
         index
+        // path='/new'
         element={<BCViz_new />}
       />
-      {/* <Route element={<Virtualize />} path='test' /> */}
     </Routes>
   );
 }

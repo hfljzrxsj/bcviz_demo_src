@@ -57,8 +57,8 @@ export default function SVGCharts (props: SVGChartsProps & {
   // const clickCircle = useMemoizedFn(clickCircleFn(clickCircleProps));
   const {
     // doubleClickCircle,
-    clickCircle } = useCircleFn({ ...props, setSize, size });
-  const doubleClickCircle: CommonSVGProps['doubleClickCircle'] = useMemoizedFn(clickToSetSize({ isEditX, setSize, size, drawDotData }));
+    clickCircle } = useCircleFn({ ...props, size });
+  const doubleClickCircle: CommonSVGProps['doubleClickCircle'] = useMemoizedFn(clickToSetSize({ isEditX, setSize, size }));
   const commonSVGProps: CommonSVGProps = { ...props, drawDotData, clickCircle, doubleClickCircle: doubleClickCircle, graphLine, size };
 
   return <>

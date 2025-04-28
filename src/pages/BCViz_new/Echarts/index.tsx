@@ -63,9 +63,9 @@ const silceArr = <T,> (arr: ReadonlyArray<T>, num: number) => {
 type RenderArrFuncReturn = ReadonlyArray<tanColorContentJsxParam>;
 const renderArrFunc = ({ k, kInd, v, neighbor, color }: PosDataObj) => ([
   ['Vertex Name', `${k + kInd}`],
-  ['Maximum Cohesion', `${v}`],
+  (isUndefined(v) ? undefined : ['Maximum Cohesion', `${v}`]),
   (isUndefined(neighbor) ? undefined : ['Neighbors', `${silceArr(neighbor, silceArrNum).map(({ k, kInd }) => `${k + kInd}`).join(', ')}${neighbor.length > silceArrNum ? '...' : ''}`]),
-  ['Vertex Degree', `${neighbor?.length}`,],
+  (isUndefined(neighbor) ? undefined : ['Vertex Degree', `${neighbor.length}`,]),
 ]) as RenderArrFuncReturn;
 const renderArrFuncSuper: typeof renderArrFunc = (posDataObj: PosDataObj) => {
   const { k, kInd, v, neighbor, color } = posDataObj;
@@ -97,9 +97,9 @@ const commonTooltipOption: TooltipComponentOption = ({
   axisPointer: {
     type: 'cross', // 十字准线辅助显示数据
   },
-  label: {
-    show: true // 显示坐标值
-  },
+  // label: {
+  //   show: true // 显示坐标值
+  // },
 });
 const commonSeriesOption: GraphSeriesOption | LineSeriesOption = freeze({
   label: {
@@ -161,9 +161,9 @@ const commonEmphasisOption: (GraphSeriesOption
       textShadowBlur: 5,
       textShadowColor: shadowColor3,
     },
-    labelLine: {
-      show: true
-    },
+    // labelLine: {
+    //   show: true
+    // },
     itemStyle: {
       shadowColor: shadowColor3,
       shadowBlur: 10,
@@ -199,7 +199,8 @@ const getLineStyleWidthFunc = (isBiggerThanShowAllCount: boolean, superWidthArr:
     return (e: number) => e;
   }
 };
-const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: OriginGraphDataSuperReadonlyArr | undefined, mode?: Modes, size: execTextType['size'] = undefined, { max: maxV, min: minV } = getCommonValueFromTableData(dataArrWithPos, svgWH), isBiggerThanShowAllCount = false): EChartsOption => {
+export type Link = NonNullable<GraphSeriesOption['links']>[number];
+export const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: OriginGraphDataSuperReadonlyArr | undefined, mode?: Modes, size: execTextType['size'] = undefined, { max: maxV, min: minV } = getCommonValueFromTableData(dataArrWithPos, svgWH), isBiggerThanShowAllCount = false): EChartsOption => {
   if (!dataArrWithPos || !graphData) {
     return {};
   }
@@ -273,7 +274,7 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
         },
         data: dataArrWithPos.map((dotData) => {
           const { k, kInd, graphX, graphY, v, color, neighbor } = dotData;
-          const symbolSize = getSymbolSize(isBiggerThanShowAllCount ? v : neighbor?.length ?? v);
+          const symbolSize = getSymbolSize((isBiggerThanShowAllCount ? v : neighbor?.length) ?? v ?? 0);
           return ({
             name: getDotName(dotData),
             value: v,
@@ -332,7 +333,7 @@ const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: Or
             },
             // graphLinkColor[ind]
             superWidth,
-          } as NonNullable<GraphSeriesOption['links']>[number]);
+          } as Link);
         }) as GraphSeriesOption['links'],
         lineStyle: {
           // width:1,
@@ -649,7 +650,7 @@ export default function Echarts (props: {
   const clickToSetSizeECharts = useMemoizedFn(clickToSetSize({
     isEditX, setSize, size
   }));
-  const onDblClick: onEChartsParam = ['dblclick', 'series', ((eCElementEvent) => {
+  const onDblClick: onEChartsParam = useMemo(() => ['dblclick', 'series', ((eCElementEvent) => {
     const {
       // componentSubType,
       // componentType,
@@ -663,8 +664,8 @@ export default function Echarts (props: {
     if (isSafeInteger(dataIndex) && name && isSafeInteger(value) && typeof value === 'number') {
       clickToSetSizeECharts({ v: value })();
     }
-  })];
-  const onClick: onEChartsParam = ['click', 'series', clickEChartDotToAddMultiDots];
+  })], [clickToSetSizeECharts]);
+  const onClick: onEChartsParam = useMemo(() => ['click', 'series', clickEChartDotToAddMultiDots], [clickEChartDotToAddMultiDots]);
   const LineCharts = <CommonCharts option={lineChartsOption} onParams={[onDblClick, onClick]} />;
   const GraphCharts = <CommonCharts option={GraphChartsOption} onParams={[onDblClick, onClick]} />;
   const ResultCharts = <CommonCharts option={ResultGraphChartsOption} />;
@@ -713,8 +714,12 @@ export default function Echarts (props: {
 
   return <>
     <ChartsTabPanel value={TabKey.all} key={getKey(TabKey.all)}>
-      <div elevation={0} className={style['AllPanel'] ?? ''}>
-        <div elevation={0} className={style['AllPanel-ECharts'] ?? ''} style={{ '--minHeight': '71vh' } as CSSProperties}>
+      <div
+        // elevation={0}
+        className={style['AllPanel'] ?? ''}>
+        <div
+          // elevation={0}
+          className={style['AllPanel-ECharts'] ?? ''} style={{ '--minHeight': '71vh' } as CSSProperties}>
           {keyToJSX(LineCharts, TabKey.table)}
           {keyToJSX(GraphCharts, TabKey.graph)}
           {isNotGetResult ? null : keyToJSX(ResultCharts, TabKey.result)}

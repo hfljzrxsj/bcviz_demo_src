@@ -29,9 +29,14 @@ const { isSafeInteger } = Number;
 const { freeze } = Object;
 const { stringify } = JSON;
 export type UseSetState<T extends Record<string, any>> = typeof useSetState<T>;
-export type UseSetInputST = ReturnType<UseSetState<InputSTSetState>>;
+export type UseSetStateReturnType<T extends Record<string, any>> = ReturnType<UseSetState<T>>;
+export type UseSafeState<T extends unknown> = typeof useSafeState<T>;
+export type UseSafeStateReturnType<T extends unknown> = ReturnType<UseSafeState<T>>;
+//export type UseSetStateReturnType<T extends Record<string, any>, S extends (<A, >(e: A) => [A, () => void])> = ReturnType<S<T>>;
 
-type UseSafeState<T> = ReturnType<typeof useSafeState<T>>;
+export type UseSetInputST = UseSetStateReturnType<InputSTSetState>;
+
+// type UseSafeStateReturnType<T> = ReturnType<typeof useSafeState<T>>;
 
 export default function TabPanelInput (props: {
   readonly useSetInputST: UseSetInputST;
@@ -39,7 +44,7 @@ export default function TabPanelInput (props: {
   readonly fileNames: FileNames;
   readonly setTabToResult: () => void;
   readonly dataArrWithPos: OriginDataObjReadonlyArr;
-  readonly useMultiDots: UseSafeState<OriginDataObjReadonlyArr>;
+  readonly useMultiDots: UseSafeStateReturnType<OriginDataObjReadonlyArr>;
   // readonly labelS: string;
   // readonly labelT: string;
 } & UseGetFromST) {

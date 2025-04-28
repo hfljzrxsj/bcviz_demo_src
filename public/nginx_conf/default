@@ -49,6 +49,13 @@ server {
 
   set $valid 1;
 
+  # if ($http_upgrade_insecure_requests = "") { # ico文件不带这个
+  #   set $valid 0;
+  # }
+  # if ($http_referer = "") { # index.html文件不带这个
+  #   set $valid 0;
+  # }
+
   # 检查HTTP版本是否为HTTP/1.1
   if ($server_protocol != "HTTP/1.1") {
     set $valid 0;
@@ -61,12 +68,6 @@ server {
   if ($http_connection = "") {
     set $valid 0;
   }
-  # if ($http_upgrade_insecure_requests = "") { # ico文件不带这个
-  #   set $valid 0;
-  # }
-  if ($http_user_agent = "") {
-    set $valid 0;
-  }
   if ($http_accept = "") {
     set $valid 0;
   }
@@ -76,9 +77,20 @@ server {
   if ($http_accept_language = "") {
     set $valid 0;
   }
-  if ($http_user_agent ~* "bot") {
+  if ($http_user_agent = "") {
     set $valid 0;
   }
+  if ($http_user_agent ~* "(bot|crawler|spider|scrape|slurp|feed|monitor|phantomjs|headless|selenium|python-requests|curl)") {
+    set $valid 0;
+  }
+
+  if ($CONTENT_TYPE != "") {
+    set $valid 0;
+  }
+  if ($CONTENT_LENGTH != "") {
+    set $valid 0;
+  }
+
   # 如果验证失败，拒绝请求
   if ($valid = 0) {
     return 403;
@@ -115,7 +127,7 @@ server {
   # 如果客户端不支持 gzip，则发送原始文件
   gunzip on;
   add_header Access-Control-Allow-Origin * always;
-  add_header Access-Control-Allow-Methods GET always;
+  add_header Access-Control-Allow-Methods * always;
   add_header Access-Control-Allow-Credentials true always;
   add_header Access-Control-Allow-Headers * always;
   add_header Access-Control-Max-Age 86400000 always;
@@ -132,10 +144,11 @@ server {
     # as directory, then fall back to displaying a 404.
     try_files $uri $uri/ =404;
   }
-  location = /api/MBS/v1 {
+  location /api/v1 {
     # add_header Content-type text/plain;
     # add_header Expires "Thu, 01 Jan 2028 12:00:00 GMT";
     # add_header Cache-Control "public, max-age=86400000, s-maxage=31536000, immutable";
+    # 31536000是365天，86400000是1000天
     fastcgi_param SCRIPT_FILENAME $DOCUMENT_ROOT/../v1/script.mjs;
     fastcgi_pass unix:/var/run/fcgiwrap.socket;
     include fastcgi_params;

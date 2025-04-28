@@ -356,6 +356,8 @@ export default function FileUpload (props: FileUploadProps) {
 
 // export { type NullValue };
 
+// 控制台：https://lavm-console.jdcloud.com/lavm/detail/cn-north-1/lavm-l1f5f2rdrk
+
 /* 马上要做的：
 1. 如果是超图，Tab标题、ECharts左上角title应该标注超图
 2. 自定义绘制图

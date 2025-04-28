@@ -14,6 +14,10 @@ const { error } = console;
 const { isSafeInteger } = Number;
 const { } = Object;
 export const baseURL = 'http://117.72.219.9';
+if (isDEV) {
+  const { defaults } = axios;
+  defaults.baseURL = baseURL;
+}
 waitOnLoadEventLoop(() => {
   const { origin, protocol, port, hostname, } = location;
   if (origin === baseURL
@@ -186,8 +190,10 @@ type GetFromSTParams = FileNames
 //| Required<Parameters<typeof axios.get>>[1]['params'] & Record<string, string | number>
 // export const isRecordString2 = (v: GetFromSTParams): v is Record<string, string> => true;
 
+const getApiVersionPrefix = (pathname: string) => `/api/v1/${pathname}`;
+
 export const getSearchBCviz = async <T,> (params: GetFromSTParams) => {
-  const url = `/api/MBS/v1`;
+  const url = getApiVersionPrefix('MBS');
   // const key = sha1().update(`${url}?${new URLSearchParams(params)}`, 'hex').digest('hex');
   const paramsRecordString2: Record<string, string> = omitBy(params, isUndefined);
   const key = `${url}?${new URLSearchParams(paramsRecordString2)}`;
@@ -207,39 +213,6 @@ export const getSearchBCviz = async <T,> (params: GetFromSTParams) => {
   return { data, key };
 };
 export const getFromST = async (mode: Modes, oldData: Datas | undefined, params: GetFromSTParams) => {
-  // if (isDEV) {
-  //   await new Promise(resolve => {
-  //     // setTimeout(() => {
-  //     waitLastEventLoop(resolve);
-  //     // }, 2e3);
-  //   });
-  //   return {
-  //     ...oldData,
-  //     [mode]: mockText(),
-  //   };
-  // }
-  // const url = `/api/BCviz/v5`;
-  // const key = sha1().update(`${url}?${new URLSearchParams(params)}`, 'hex').digest('hex');
-  // const paramsRecordString2: Record<string, string> = omitBy(params, isUndefined);
-  // const key = `${url}?${new URLSearchParams(paramsRecordString2)}`;
-  // const data = await getFileIdb<execTextType>(key).catch(() => axios.get<string>(url, {
-  //   responseType: 'text',
-  //   params,
-  // }).then(e => {
-  //   const { data } = e;
-  //   const willResolveData = {
-  //     ...execTextFromApi(data)[mode],
-  //     ...params,
-  //   };
-  //   createOrAddIdb({ ...idbCommonArgs, data: willResolveData, IDBValidKey: key });
-  //   return willResolveData;
-  // }, (reason) => {
-  //   error(reason);
-  //   throw new Error(reason);
-  // })).catch((reason) => {
-  //   error(reason);
-  //   throw new Error(reason);
-  // });
   const data = await getSearchBCviz<execTextType>(params).then(({ data, key }) => {
     if (typeof data === 'string') {
       const willResolveData = {
@@ -295,4 +268,20 @@ export const getSG = (params: GetFromSTParams) => {
     return data;
   });
   return data;
+};
+export const uploadFile = (data: string, dataset: string) => {
+  return axios.post(getApiVersionPrefix('upload'), data, {
+    params: {
+      dataset
+    }
+  });
+};
+export const constructBCviz = (data: string, dataset: string) => {
+  return axios.post(getApiVersionPrefix('construct'), data, {
+    params: {
+      dataset,
+      s_min: 1,
+      t_min: 1
+    }
+  });
 };

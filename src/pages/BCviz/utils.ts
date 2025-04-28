@@ -40,7 +40,7 @@ export const getCommonValueFromTableData = (tableData: OriginDataObjReadonlyArr 
   const valuesArr = tableData?.map(({ v }) => v) ?? [];
   const min = Math.min(...valuesArr);
   const max = Math.max(...valuesArr);
-  const diff = max - min;
+  const diff = max === min ? 1 : max - min;
   // const dataArr: [string, number, number][] = data.map((i, ind) => ([...i, ind]));
   const { length } = valuesArr;
   const realWidth = svgWidth - marginSize * 2;
@@ -122,7 +122,8 @@ export const getDataArrWithPos = (tableData: getCommonValueFromTableDataParamers
   const realWidth = svgWidth - marginSize * 2;
   const tableDataGroupByK = groupBy(tableData, ({ k }) => k) as unknown as Record<UVenum, OriginDataObjReadonlyArr>;
   const graphGroupDiffX = mapValues(tableDataGroupByK, ((v) => {
-    return realWidth / (v.length - 1);
+    const { length } = v;
+    return realWidth / (length <= 1 ? 1 : (length - 1));
   })) as Record<UVenum, number>;//{u:6,v:6}
   const graphGroupDiffY = (graphSvgHeght - marginSize * 2) / (uvLength - 1);
   // console.log(.2, performance.now() - start);

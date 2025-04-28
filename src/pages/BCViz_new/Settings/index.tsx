@@ -128,6 +128,7 @@ export default function Settings (props: {
             // disabled={!dbLength}
             onClick={() => {
               if (confirm('Are you sure you want to clear the cache?')) {
+                localStorage.clear();
                 delAllDB().then(() => {
                   alert('Clear Success!');
                 }, () => {

@@ -3,10 +3,13 @@ import { UVenum, clickCircleFn, doubleClickCircleFn, getCommonValueFromTableData
 import { type Result } from 'ahooks/lib/useRequest/src/types';
 import type { Datas, execTextType, getFromST } from "../BCViz_new/api";
 
-export interface OriginDataObj {
+export interface CustomDrawOriginDataObj {
+
+}
+export interface OriginDataObj extends CustomDrawOriginDataObj {
   readonly k: UVenum;
   readonly kInd: number;
-  readonly v: number;
+  readonly v?: number;
 }
 export type dotNeighbor = Array<Omit<OriginDataObj, 'v'>>;
 export interface OriginDataObjWithIndex extends OriginDataObj {
@@ -36,7 +39,7 @@ export type OriginGraphDataSuper = OriginGraphData & {
 };
 export type OriginGraphDataSuperArr = Array<OriginGraphDataSuper>;
 export type OriginGraphDataSuperReadonlyArr = ReadonlyArray<OriginGraphDataSuper>;
-export type OriginGraphDataArr = (Record<UVenum, OriginDataObj['kInd']>)[];
+export type OriginGraphDataArr = OriginGraphData[];
 export type OriginGraphDataReadonlyArr = Readonly<OriginGraphDataArr>;
 export type kInd = OriginDataObj['kInd'];
 type indexNeighbor = Record<kInd, dotNeighbor>;

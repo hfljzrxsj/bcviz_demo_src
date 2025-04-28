@@ -6,7 +6,7 @@ const { log, error } = console;
 const { stdin, env, } = process;
 log("hjx: hjx");
 log();
-console.log(process.cwd());
+log(process.cwd());
 log(JSON.stringify(env));
 // 同步读取（适用于简单场景）
 log(readFileSync(stdin.fd, 'utf8'));
@@ -35,16 +35,8 @@ process.on('uncaughtException', (err) => {
 
 
 /*
-location /your-endpoint {
-  root /your/webroot;  # 设置实际存放脚本的根目录
-  fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
-  include fastcgi_params;
-  fastcgi_pass unix:/var/run/fcgiwrap.socket;
-}
-
 curl -X POST -H "Content-Type: application/json" -d '{"key":"value"}' http://yoursite/cgi-bin/script.js
 CONTENT_LENGTH=15 CONTENT_TYPE=text/plain REQUEST_METHOD=POST node script.js
-error_log /var/log/nginx/cgi_error.log debug;
 fastcgi_read_timeout 300;
 fastcgi_send_timeout 300;
 */

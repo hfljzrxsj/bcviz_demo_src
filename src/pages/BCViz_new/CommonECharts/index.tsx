@@ -1,5 +1,5 @@
 import {
-  Paper,
+  Paper, PaperProps,
   // Button, Dialog, Divider, Select, FormControl, InputLabel, MenuItem, Tooltip, Fab, IconButton
 } from '@mui/material';
 import { memo, useEffect, useMemo, useRef, useImperativeHandle } from 'react';
@@ -114,8 +114,8 @@ export default memo((props: {
   readonly option: EChartsOption;
   readonly onParams?: ReadonlyArray<onEChartsParam>;
   // readonly clickToSetSize: ReturnType<typeof clickToSetSize>;
-}) => {
-  const { option, onParams = [], } = props;
+} & PaperProps) => {
+  const { option, onParams = [], ...others } = props;
   // const update = useUpdate();
   const ref = useRef<HTMLDivElement>(null);
   // const { current } = ref;
@@ -248,7 +248,7 @@ export default memo((props: {
 
       </Fab> */}
     <Paper elevation={24} ref={ref} className={style['Chart'] ?? ''}
-
+      {...others}
     >
 
     </Paper>
