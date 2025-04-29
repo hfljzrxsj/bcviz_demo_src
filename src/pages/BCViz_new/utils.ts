@@ -78,7 +78,7 @@ export const getDataArrWithPosMutilDotsColor = (dataArrWithPos: PosDataObjArr, m
 };
 export const minRadius = 40;
 export const maxRadius = 80;
-export const getSymbolSize = (v: number, bool?: unknown) => clamp(bool ? v * 5 : v, minRadius, maxRadius);
+export const getSymbolSize = (v: number | undefined, bool?: unknown) => isUndefined(v) ? minRadius : clamp(bool ? v * 5 : v, minRadius, maxRadius);
 function calculateCirclePositions (radii: OriginDataObjReadonlyArr, UV?: UVReturnType): ReadonlyArray<number> {
   if (radii.length === 0) return [];
   const clampedRadii: ReadonlyArray<number> = radii.map(({ v, k, kInd }) => getSymbolSize(v, UV?.[k].includes(kInd)));

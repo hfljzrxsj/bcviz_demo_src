@@ -1,0 +1,27 @@
+.Paper {
+  width: 100%;
+  padding: 9q;
+
+  .Tab {
+    flex-grow: 1;
+  }
+
+  .TabPanel {
+    padding: 9q;
+    display: flex;
+    flex-direction: column;
+    gap: 9q;
+    width: 100%;
+
+    :global(.MuiTextField-root) {
+      // margin: 9q;
+      // width: inherit;
+      flex-grow: 1;
+    }
+
+    .input {
+      // padding: 9q;
+      display: block;
+    }
+  }
+}

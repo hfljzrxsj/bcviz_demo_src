@@ -15,11 +15,15 @@ import { uvHighlightColor } from "../BCViz_new";
 import { CallbackDataParams } from "echarts/types/dist/shared";
 import classNames from 'clsx';
 import { isDEV, isPROD } from "@/utils/isEnv";
-import { testGraphData, testTableData } from "./devTestData";
+import { initUVcount, testGraphData, testTableData } from "./devTestData";
 import axios from "axios";
 import { waitMiddleEventLoop } from "@/utils";
 import { createOrAddIdb } from "@/utils/idb";
-import { constructBCviz, uploadFile } from "../BCViz_new/api";
+import { constructBCviz, isLocalhost, uploadFile } from "../BCViz_new/api";
+import { useNavigate } from "react-router";
+//@ts-expect-error
+import md5 from 'md5';
+// import { } from '@types/md5';
 const { freeze, fromEntries } = Object;
 const { from } = Array;
 const { isSafeInteger } = Number;
@@ -30,10 +34,7 @@ export const UVEnumArr = freeze([UVenum.U, UVenum.V]);
 export default function BCviz_Edit () {
   const useFileName = useSafeState<string | undefined>(`file-${new Date().toJSON()}`);
   const [fileName, setFileName] = useFileName;
-  const useUVCount = useSetState(isDEV ? testTableData : {
-    [UVenum.U]: 1,
-    [UVenum.V]: 1,
-  });
+  const useUVCount = useSetState(initUVcount);
   const [uvCount, setUvCount] = useUVCount;
 
   const tableData = useMemo(() => {
@@ -160,6 +161,7 @@ export default function BCviz_Edit () {
     }
   });
   const onDblClick: onEChartsParam = ['dblclick', 'series', onDblClickFn];
+  const navigate = useNavigate();
   return <Paper elevation={24} className={BCViz_newStyle['Main'] ?? ''}>
     <InitModal {...{ useFileName, useUVCount }} />
     <SideCollapse>
@@ -172,50 +174,66 @@ export default function BCviz_Edit () {
         onClick={async () => {
           try {// if (confirm('Create BCviz file?')) {
             const text = graghData.map(({ u, v }) => `${u} ${v}`).join('\n');
-            console.log(text);
-            const hash = await subtle.digest("SHA-1", textEncoder.encode(text)).then(arrayBuffer => {
-              const hash = from(new Uint32Array(arrayBuffer
-                // .slice(8)
-              )).map(i => i.toString(36)).join('');
-              return hash;
-              console.log(hash);
-            });
+            // const hash = await subtle.digest("SHA-1", textEncoder.encode(text)).then(arrayBuffer => {
+            //   const hash = from(new Uint32Array(arrayBuffer
+            //     // .slice(8)
+            //   )).map(i => i.toString(36)).join('');
+            //   return hash;
+            //   // console.log(hash);
+            // });
+            const hash: string = md5(text);
             const fileNameFEWithExt = `${fileName}.txt`;  // 前端展示文件名
             const fileNameBEWithExt = `${hash}.txt`;  // 后端文件名
             const datasetsFileFolder = 'datasets/';
             // const fileNameBEWithExt = fileNameBEWithExt;//`${datasetsFileFolder}${fileNameBEWithExt}`;
-            const fetchSeeIsExit = isDEV ? false : await axios.get(fileNameBEWithExt, {
-              validateStatus (status) {
-                return status === 200 || status === 304;
-              },
-            }).then(() => true, () => false);
+            const fetchSeeIsExit =
+              isLocalhost() ? false :
+                await axios.get(fileNameBEWithExt, {
+                  validateStatus (status) {
+                    return status === 200 || status === 304;
+                  },
+                }).then(() => true, () => false);
             if (!fetchSeeIsExit) {
               await constructBCviz(text, fileNameBEWithExt);
               await waitMiddleEventLoop();
-              if (isPROD) {
-                const url = new URL('/', location.origin);
-                url.searchParams.set('dataset', fileNameBEWithExt);
-                url.searchParams.set('BCviz_file', `${hash}_cohesion.txt`);
-                open(url, '_blank');
-              }
-
               // await uploadFile(text, fileNameBEWithExt);
             }
-            if (isPROD) {
-              const willResolveData = {
-                fileInfo: {
-                  lastModified: Date.now(),
-                  name: fileNameBEWithExt,
-                  size: text.length,
-                  // type: headers.get('content-type') ?? '',
-                  // downloadUrl,
-                },
-                fileData: text,
-              };
-              createOrAddIdb({
-                ...idbCommonArgs, data: willResolveData, IDBValidKey: fileNameBEWithExt
-              });
-            }
+            // if (isPROD) {
+            const searchParams = new URLSearchParams({
+              dataset: fileNameBEWithExt,
+              BCviz_file: `${hash}_cohesion.txt`,
+            });
+            navigate({
+              pathname: '/',
+              search: `?${searchParams.toString()}`
+            });
+
+            // 构建符合 HashRouter 结构的 URL
+            // const targetUrl = `${window.location.origin}/#/?${searchParams.toString()}`;
+
+            // // 在新标签页打开
+            // window.open(targetUrl, '_blank');
+
+            // }
+            // const url = new URL('/', location.origin);
+            // url.searchParams.set('dataset', fileNameBEWithExt);
+            // url.searchParams.set('BCviz_file', `${hash}_cohesion.txt`);
+            // open(url, '_blank');
+            // if (isPROD) {
+            const willResolveData = {
+              fileInfo: {
+                lastModified: Date.now(),
+                name: fileNameBEWithExt,
+                size: text.length,
+                // type: headers.get('content-type') ?? '',
+                // downloadUrl,
+              },
+              fileData: text,
+            };
+            createOrAddIdb({
+              ...idbCommonArgs, data: willResolveData, IDBValidKey: fileNameBEWithExt
+            });
+            // }
             // localStorage.setItem(fileNameFEWithExt, fileBEPath);
             // localStorage.setItem(`${fileName}_cohesion.txt`, fileBEPath);
             // await waitMiddleEventLoop();
@@ -232,3 +250,13 @@ export default function BCviz_Edit () {
     </Paper>
   </Paper>;
 }
+
+/*
+1. 历史记录管理（indexedb+searchparam）
+2. 使用帮助提示
+3. 动态增减点（每次减后graphdata都要去掉边）
+4. loading动画
+5. 一条边都没有时，按钮变灰
+6. 即将上传的文本预览，便于修改
+
+*/

@@ -12,6 +12,7 @@ import FileUploadExample from "../FileUploadExample";
 import { createOrAddIdb, type IndexedDBProps } from "@/utils/idb";
 import { getFileIdb } from "@/pages/BCViz_new/utils";
 import { toast } from 'react-toastify';
+import axios from "axios";
 const { revokeObjectURL, createObjectURL } = URL;
 const { freeze } = Object;
 const { error } = console;
@@ -104,9 +105,12 @@ const withDownloadUrl = (data: fetchDataReturn): fetchDataReturn => {
     }
   });
 };
-export const fetchData = (url: string) => getFileIdb<fetchDataReturn>(url).then(withDownloadUrl).catch(() => fetch(url).then(async res => {
-  const { headers } = res;
-  const data = await res.text();
+export const fetchData = (url: string) => getFileIdb<fetchDataReturn>(url).then(withDownloadUrl).catch(() => axios.get(url, {
+  responseType: 'text'
+}).then(async res => {
+  const headers = new Headers(res.headers as Record<string, string>);
+  // const data = await res.text();
+  const { data } = res;
   // if (typeof data === 'string') {
   // try {
   const downloadUrl = getDownloadUrl(new Blob([data]));

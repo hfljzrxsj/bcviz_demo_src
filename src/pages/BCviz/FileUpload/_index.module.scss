@@ -3,3 +3,15 @@
 .FileUploadTeam {
   display: flex;
 }
+
+.LinkToEdit {
+  // padding: 9q;
+  background-color: transparent;
+  text-align: center;
+  // width: min-content;
+
+  .backIcon {
+    transform: rotate(180deg)
+  }
+
+}

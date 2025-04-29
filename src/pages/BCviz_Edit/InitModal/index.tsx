@@ -5,28 +5,40 @@ import { useBoolean, useSafeState, useSetState } from "ahooks";
 import { UVEnumArr } from "..";
 import { UseSafeStateReturnType, UseSetStateReturnType } from "@/pages/BCViz_new/TabPanelInput/TabPanelInput";
 import { isPROD } from "@/utils/isEnv";
+import style from './_index.module.scss';
+import { initUVcount } from "../devTestData";
+import { isUndefined } from "lodash";
+const { isSafeInteger } = Number;
 const enum TabKey {
   'create',
   'history'
 }
+type typeofUvCountInner = typeof initUVcount;
 
 export default function InitModal (props: {
   readonly useFileName: UseSafeStateReturnType<string>,
-  readonly useUVCount: UseSetStateReturnType<Record<UVenum, number>>;
+  readonly useUVCount: UseSetStateReturnType<typeofUvCountInner>;
 }) {
-  const { useFileName, useUVCount } = props;
+  const { useFileName, useUVCount: [, setUvCount] } = props;
   const [isOpen, { setFalse }] = useBoolean(true);
   const [tab, setTab] = useSafeState<number>(TabKey.create);
   const [fileName, setFileName] = useFileName;
-  const [uvCount, setUvCount] = useUVCount;
+  const [uvCountInner, setUvCountInner] = useSetState(initUVcount);
+  // const [] = useUVCount;
   return <Dialog open={isOpen}>
-    <Paper elevation={24}>
+    <Paper elevation={24} className={style['Paper'] ?? ""}>
       <TabContext value={tab}>
         <TabList onChange={(e, v) => setTab(v)} >
-          <Tab label="Create New" value={TabKey.create} />
+          <Tab label="Create New" value={TabKey.create}
+            className={style['Tab'] ?? ''}
+          />
         </TabList>
         <TabPanel value={TabKey.create} >
-          <Paper elevation={24}>
+          <Paper elevation={24} className={style['TabPanel'] ?? ""}
+          // sx={{
+          //   '& .MuiTextField-root': { m: 1, width: '25ch' },
+          // }}
+          >
             {/* <TextField
               fullWidth
               placeholder='Please enter filename'
@@ -52,34 +64,50 @@ export default function InitModal (props: {
             /> */}
             {UVEnumArr.map(uv => {
               const label = `Please enter count of ${uv}`;
-              return <TextField
-                fullWidth
-                key={uv}
-                label={label}
-                title={label}
-                placeholder={label}
-                type="number"
-                required
-                spellCheck
-                autoCapitalize='on'
-                enterKeyHint='next'
-                translate='yes' //控制元素内容是否应被浏览器自动翻译。
-                inputMode="numeric"
-                error={uvCount[uv] <= 0}
-                value={uvCount[uv]}
-                onChange={(e) => {
-                  setUvCount(({
-                    [uv]: Number(e.target.value),
-                  }) as (typeof uvCount));
-                }
-                }
-                inputProps={{
-                  min: 0,
-                  inputMode: 'numeric',
-                  pattern: '^(0|[1-9]\d*)$',
-                  max: 99,
-                }}
-              />;
+              return (
+                // <Paper elevation={24} className={style['input'] ?? ""}>
+                <TextField
+                  fullWidth
+                  key={uv}
+                  label={label}
+                  title={label}
+                  placeholder={label}
+                  type="number"
+                  required
+                  spellCheck
+                  autoCapitalize='on'
+                  enterKeyHint='next'
+                  translate='yes' //控制元素内容是否应被浏览器自动翻译。
+                  inputMode="numeric"
+                  error={(!uvCountInner[uv])}
+                  value={uvCountInner[uv]}
+                  onChange={(e) => {
+                    const { value } = e.target;
+                    if (value === '' || isUndefined(value)) {
+                      setUvCountInner(({
+                        [uv]: undefined,
+                      }) as typeofUvCountInner);
+                    } else {
+                      const n1 = parseInt(value);
+                      const n2 = Number(value);
+                      if (isSafeInteger(n1) && isSafeInteger(n2)) {
+                        setUvCountInner(({
+                          [uv]: n1,
+                        }) as typeofUvCountInner);
+                      }
+                    }
+
+                  }
+                  }
+                  inputProps={{
+                    min: 0,
+                    inputMode: 'numeric',
+                    pattern: '^(0|[1-9]\d*)$',
+                    max: 99,
+                  }}
+                  className={style['input'] ?? ''}
+                />
+              );
             })
             }
           </Paper>
@@ -87,9 +115,12 @@ export default function InitModal (props: {
       </TabContext>
       <Button fullWidth size="large" disabled={
         // !fileName ||
-        UVEnumArr.some(uv => uvCount[uv] === 0)
+        UVEnumArr.some(uv => !uvCountInner[uv])
       }
+        variant="contained"
+
         onClick={() => {
+          setUvCount(uvCountInner);
           setFalse();
         }}
       >Confirm</Button>

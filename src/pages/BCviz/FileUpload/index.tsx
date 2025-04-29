@@ -1,5 +1,5 @@
 import { UV, UVenum } from "../utils";
-import { Button, Dialog, Divider, Paper } from "@mui/material";
+import { Button, Dialog, Divider, Link as Link_MUI, Paper, Tooltip } from "@mui/material";
 import { useMount, useBoolean, useUpdateEffect, useMemoizedFn, useDynamicList } from "ahooks";
 import style from './_index.module.scss';
 import { type SetStateType } from "../types";
@@ -9,13 +9,16 @@ import FileUploadSimple, { fetchData } from "../FileUploadSimple";
 import classNames from "clsx";
 import { unstable_batchedUpdates } from "react-dom";
 import type { OriginDataObj, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr, OriginGraphDataArr, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr } from "../types";
-import { useSearchParams } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 import { uniq } from "lodash";
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+
 // import type { NullValue } from "vite/node_modules/rollup";
 // import type { NullValue } from "rollup";
 import { ToastContainer } from "react-toastify";
 import { TabKey, TabKey2Title } from "@/pages/BCViz_new/utils";
+import { Path } from "@/Route";
 const { error } = console;
 // import {
 //   usePopupState,
@@ -156,6 +159,7 @@ export default function FileUpload (props: FileUploadProps) {
     if (uniq(arrKeys).filter((key) => fileNameKeys.includes(key)).length !== length) {
       return false;
     }
+
     return true;
   }, [searchParams]);
   const searchParamsError = useMemoizedFn(() => {
@@ -277,23 +281,24 @@ export default function FileUpload (props: FileUploadProps) {
         <Paper key='title' elevation={24} className={style['title'] ?? ''}>
           <h3>New Graph</h3>
         </Paper>
-        <Paper key='upload' elevation={24}
-          className={classNames(style['Paper'], style['FileUploadTeam'])}
-        >{
-            (fileUploadSimpleProps).map((item, ind) => (
+        <Paper elevation={24}>
+          <Paper key='upload' elevation={24}
+            className={classNames(style['Paper'], style['FileUploadTeam'])}
+          >{
+              (fileUploadSimpleProps).map((item, ind) => (
 
-              <FileUploadSimple
-                //@ts-expect-error
-                setWillPatchData={setWillPatchData(ind)}
-                // setWillPatchData={(e) => {
-                //   return setWillPatchData([...willPatchData.slice(0, ind), e, ...willPatchData.slice(ind + 1)] as WillPatchDataArr);
-                // }}
-                {...item}
-                key={ind}
-              />
-            ))
-          }
-          {/* <FileUploadSimple title='请上传二部图数据' parseData={parseGraphData} setWillPatchData={setWillPatchGraphData}
+                <FileUploadSimple
+                  //@ts-expect-error
+                  setWillPatchData={setWillPatchData(ind)}
+                  // setWillPatchData={(e) => {
+                  //   return setWillPatchData([...willPatchData.slice(0, ind), e, ...willPatchData.slice(ind + 1)] as WillPatchDataArr);
+                  // }}
+                  {...item}
+                  key={ind}
+                />
+              ))
+            }
+            {/* <FileUploadSimple title='请上传二部图数据' parseData={parseGraphData} setWillPatchData={setWillPatchGraphData}
             defaultTxt={['./BCviz/example.txt', './BCviz/writer.txt', './BCviz/marvel.txt']}
             key={1}
           />
@@ -304,7 +309,11 @@ export default function FileUpload (props: FileUploadProps) {
             defaultTxt={['./BCviz/example_cohesion.txt', './BCviz/writer_cohesion.txt', './BCviz/marvel_cohesion.txt']}
             key={0}
           /> */}
+          </Paper>
+          {/* 
+            <*/}
         </Paper>
+
         <Divider />
         <Paper elevation={24} key='confirm'
           className={style['Paper'] ?? ''}
@@ -347,6 +356,25 @@ export default function FileUpload (props: FileUploadProps) {
               }
             })}
           >Comfirm</Button>
+          <div
+            // elevation={24}
+            className={style['LinkToEdit'] ?? ''}
+          ><Link to={{
+            pathname: Path.edit,
+          }}
+          >
+              <Tooltip title='go to a new page' arrow>
+                <Button
+                  // fullWidth
+                  size="large"
+                  variant="text"
+                  endIcon={<ArrowBackIcon fontSize="large" className={style['backIcon'] ?? ''} />}
+                >
+                  <Link_MUI underline="hover"
+                  >
+                    Create custom Bipartite Graph</Link_MUI>
+                </Button>
+              </Tooltip></Link></div>
         </Paper>
         {/* <ToastContainer /> */}
       </Dialog>

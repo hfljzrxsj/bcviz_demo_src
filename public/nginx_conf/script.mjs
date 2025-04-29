@@ -81,18 +81,17 @@ const searchStringParse = (params) => {
 const exactPathname = (pathname) => pathname.split('/').slice(3).join('/');
 /**
  * @param {string} dataset 
- * @param {string} unzipDir_datasets 
- * @param {string} bcviz_demo_datasets 
- * @param {string} bcviz_demo 
+ * @param {string} unzipDir_datasets /etc/nginx/sites-available/v1/datasets
+ * @param {string} bcviz_demo_datasets /etc/nginx/sites-available/bcviz_demo/datasets
+ * @param {string} bcviz_demo /etc/nginx/sites-available/bcviz_demo
  * 
  */
 const writeFileAndSymlink = (dataset, unzipDir_datasets, bcviz_demo_datasets, bcviz_demo) =>/** @type {Promise<void>} */ (new Promise((resolve) => {
   const writeFilePath = join(bcviz_demo, dataset);
-  if (existsSync(writeFilePath)) {
-    return;
+  if (!existsSync(writeFilePath)) {
+    const text = readFileSync(stdin.fd, 'utf8');
+    writeFileSync(writeFilePath, text);
   }
-  const text = readFileSync(stdin.fd, 'utf8');
-  writeFileSync(writeFilePath, text);
   const unzipDir_datasets_file = join(unzipDir_datasets, dataset);
   if (!existsSync(unzipDir_datasets_file)) {
     symlinkSync(writeFilePath, unzipDir_datasets_file);
@@ -160,6 +159,12 @@ log();
         await writeFileAndSymlink(dataset, unzipDir_datasets, bcviz_demo_datasets, bcviz_demo);
         const s_min = searchParam.get('s_min');
         const t_min = searchParam.get('t_min');
+        const { name, ext } = parse(dataset);
+        const cohesionFileName = `${name}_cohesion${ext}`;
+        const cohesionFilePath = join(unzipDir, 'Index-results', cohesionFileName);
+        if (existsSync(cohesionFilePath)) {
+          return;
+        }
         execFile("./BCviz", [dataset, s_min || '1', t_min || '1'], {
           cwd: "./construct-BCviz", // 设置工作目录为 search-BCviz 文件夹
           // timeout: 0,
@@ -169,18 +174,22 @@ log();
             error('error', cmd, code, killed, message, name, signal, stack);
             return;
           }
-          const { name, ext } = parse(dataset);
-          const cohesionFileName = `${name}_cohesion${ext}`;
-          const cohesionFilePath = join(unzipDir_datasets, cohesionFileName);
-          const bcviz_file = join(bcviz_demo, cohesionFileName);
-          if (!existsSync(bcviz_file)) {
-            symlinkSync(cohesionFilePath, bcviz_file);
+          if (existsSync(cohesionFilePath)) {
+            const unzipDir_datasets_file = join(unzipDir_datasets, cohesionFileName);
+            if (!existsSync(unzipDir_datasets_file)) {
+              symlinkSync(cohesionFilePath, unzipDir_datasets_file);
+            }
+            const bcviz_file = join(bcviz_demo, cohesionFileName);
+            if (!existsSync(bcviz_file)) {
+              symlinkSync(cohesionFilePath, bcviz_file);
+            }
+            const bcviz_demo_datasets_file = join(bcviz_demo_datasets, cohesionFileName);
+            if (!existsSync(bcviz_demo_datasets_file)) {
+              symlinkSync(cohesionFilePath, bcviz_demo_datasets_file);
+            }
           }
-          const bcviz_demo_datasets_file = join(bcviz_demo_datasets, cohesionFileName);
-          if (!existsSync(bcviz_demo_datasets_file)) {
-            symlinkSync(cohesionFilePath, bcviz_demo_datasets_file);
-          }
-          log(stdout);
+          const arr = stdout.trim().split('\n');
+          log([arr.slice(0, 4), '...', arr.slice(-3)].join('\n'));
           if (stderr) {
             error('stderr:', stderr);
           };

@@ -14,10 +14,15 @@ const { error } = console;
 const { isSafeInteger } = Number;
 const { } = Object;
 export const baseURL = 'http://117.72.219.9';
-if (isDEV) {
+export const isLocalhost = () => {
+  const { origin, protocol, port, hostname, } = location;
+  return protocol === 'http:' && (hostname === 'localhost' || hostname === '127.0.0.1');
+};
+if (isLocalhost()) {
   const { defaults } = axios;
   defaults.baseURL = baseURL;
 }
+
 waitOnLoadEventLoop(() => {
   const { origin, protocol, port, hostname, } = location;
   if (origin === baseURL
@@ -27,7 +32,7 @@ waitOnLoadEventLoop(() => {
     return;
   }
   if (
-    // protocol === 'http:' &&
+    protocol === 'http:' &&
     // (hostname === 'localhost' || hostname === '127.0.0.1') &&
     true
   ) {

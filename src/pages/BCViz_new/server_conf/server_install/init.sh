@@ -61,6 +61,8 @@ sudo ln -s ../v1/datasets ../bcviz_demo/datasets
 # 设置权限
 sudo chmod --recursive 777 ./datasets/
 sudo chmod --recursive 777 ../bcviz_demo/datasets/
+sudo mkdir -p "Index-results"
+sudo chmod --recursive 777 ./Index-results/
 # 进入目录编译并设置权限
 cd ./search-BCviz/
 sudo cmake .
