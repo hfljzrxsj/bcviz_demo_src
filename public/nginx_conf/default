@@ -65,9 +65,9 @@ server {
   if ($http_host = "") {
     set $valid 0;
   }
-  if ($http_connection = "") {
-    set $valid 0;
-  }
+  # if ($http_connection = "") {  # vpn不带这个
+  #   set $valid 0;
+  # }
   if ($http_accept = "") {
     set $valid 0;
   }
@@ -84,12 +84,12 @@ server {
     set $valid 0;
   }
 
-  if ($CONTENT_TYPE != "") {
-    set $valid 0;
-  }
-  if ($CONTENT_LENGTH != "") {
-    set $valid 0;
-  }
+  # if ($CONTENT_TYPE != "") {  # POST请求会自动带上
+  #   set $valid 0;
+  # }
+  # if ($CONTENT_LENGTH != "") {
+  #   set $valid 0;
+  # }
 
   # 如果验证失败，拒绝请求
   if ($valid = 0) {
@@ -150,11 +150,6 @@ server {
     # add_header Cache-Control "public, max-age=86400000, s-maxage=31536000, immutable";
     # 31536000是365天，86400000是1000天
     fastcgi_param SCRIPT_FILENAME $DOCUMENT_ROOT/../v1/script.mjs;
-    fastcgi_pass unix:/var/run/fcgiwrap.socket;
-    include fastcgi_params;
-  }
-  location = /api/BCviz/v3 {
-    fastcgi_param SCRIPT_FILENAME /etc/nginx/sites-available/v3/search-BCviz/v3.js;
     fastcgi_pass unix:/var/run/fcgiwrap.socket;
     include fastcgi_params;
   }

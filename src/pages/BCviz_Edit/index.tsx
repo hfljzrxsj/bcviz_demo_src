@@ -19,14 +19,15 @@ import { initUVcount, testGraphData, testTableData } from "./devTestData";
 import axios from "axios";
 import { waitMiddleEventLoop } from "@/utils";
 import { createOrAddIdb } from "@/utils/idb";
-import { constructBCviz, isLocalhost, uploadFile } from "../BCViz_new/api";
+import { constructBCviz, uploadFile } from "../BCViz_new/api";
 import { useNavigate } from "react-router";
-//@ts-expect-error
-import md5 from 'md5';
+// import md5 from 'md5';
+import { str } from 'crc-32';
 // import { } from '@types/md5';
 const { freeze, fromEntries } = Object;
 const { from } = Array;
 const { isSafeInteger } = Number;
+const { abs } = Math;
 const { subtle } = crypto;
 const textEncoder = new TextEncoder();
 
@@ -181,18 +182,17 @@ export default function BCviz_Edit () {
             //   return hash;
             //   // console.log(hash);
             // });
-            const hash: string = md5(text);
+            const hash: string = abs(str(text)).toString(36);
             const fileNameFEWithExt = `${fileName}.txt`;  // 前端展示文件名
             const fileNameBEWithExt = `${hash}.txt`;  // 后端文件名
+            const fileNameBEWithExt_cohesion = `${hash}_cohesion.txt`;
             const datasetsFileFolder = 'datasets/';
             // const fileNameBEWithExt = fileNameBEWithExt;//`${datasetsFileFolder}${fileNameBEWithExt}`;
-            const fetchSeeIsExit =
-              isLocalhost() ? false :
-                await axios.get(fileNameBEWithExt, {
-                  validateStatus (status) {
-                    return status === 200 || status === 304;
-                  },
-                }).then(() => true, () => false);
+            const fetchSeeIsExit = await Promise.all([fileNameBEWithExt, fileNameBEWithExt_cohesion].map(fileName => axios.head(fileName, {
+              validateStatus (status) {
+                return status === 200 || status === 304;
+              },
+            }))).then(() => true, () => false);
             if (!fetchSeeIsExit) {
               await constructBCviz(text, fileNameBEWithExt);
               await waitMiddleEventLoop();
@@ -201,7 +201,7 @@ export default function BCviz_Edit () {
             // if (isPROD) {
             const searchParams = new URLSearchParams({
               dataset: fileNameBEWithExt,
-              BCviz_file: `${hash}_cohesion.txt`,
+              BCviz_file: fileNameBEWithExt_cohesion,
             });
             navigate({
               pathname: '/',
@@ -258,5 +258,6 @@ export default function BCviz_Edit () {
 4. loading动画
 5. 一条边都没有时，按钮变灰
 6. 即将上传的文本预览，便于修改
+7. focus: 'adjacency', 不强调某点
 
 */

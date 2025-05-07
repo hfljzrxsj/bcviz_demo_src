@@ -132,11 +132,14 @@ const CustomTab = ({ tabKey, ...props }: Omit<Parameters<typeof Tab>[0], 'label'
 export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
-    const { origin, protocol, hash, host } = location;
-    if (!sessionStorage['hjx'] && isPROD && origin !== baseURL && protocol === 'https:' && isChina()) {
-      const href = baseURL + hash;
+    const { origin, protocol, hash, host, assign, reload, replace } = location;
+    if (!sessionStorage.getItem('hjx') && isPROD && origin !== baseURL && protocol === 'https:' && isChina()) {
+      // const href = baseURL + hash;
+      const href = new URL(hash, baseURL);
       if (confirm(`后端服务已上线，点击“确认”跳转.${href}`)) {
-        location.href = href;
+        // open(href, '_self');
+        location.assign(href);
+        // location.href = href;
       } else {
         sessionStorage.setItem('hjx', 'hxj');
       }

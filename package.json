@@ -109,7 +109,7 @@
     "vite-plugin-imagemin": "*",
     "vite-plugin-minipic": "*",
     "vite-plugin-svgo": "*",
-    "md5": "*"
+    "crc-32": "*"
   },
   "resolutions": {
     "@types/accepts": "^1.3.5",

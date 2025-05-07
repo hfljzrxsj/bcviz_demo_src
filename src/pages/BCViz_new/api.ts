@@ -13,40 +13,41 @@ import type { OriginDataObjReadonlyArr, OriginGraphDataSuperReadonlyArr } from "
 const { error } = console;
 const { isSafeInteger } = Number;
 const { } = Object;
-export const baseURL = 'http://117.72.219.9';
+export const baseURL = localStorage.getItem('baseURL') ?? 'http://117.72.219.9';
 export const isLocalhost = () => {
   const { origin, protocol, port, hostname, } = location;
   return protocol === 'http:' && (hostname === 'localhost' || hostname === '127.0.0.1');
 };
-if (isLocalhost()) {
+const isChangeBaseURL = isLocalhost() && localStorage.getItem('hjx');
+if (isChangeBaseURL) {
   const { defaults } = axios;
   defaults.baseURL = baseURL;
 }
 
+const validateStatus204 = (status: number) => {
+  return status === 204;
+};
 waitOnLoadEventLoop(() => {
   const { origin, protocol, port, hostname, } = location;
   if (origin === baseURL
-    || isDEV
+    || isChangeBaseURL
     // || port === '4173'
   ) {
     return;
   }
   if (
-    protocol === 'http:' &&
-    // (hostname === 'localhost' || hostname === '127.0.0.1') &&
-    true
+    protocol === 'http:'
+    // && (hostname === 'localhost' || hostname === '127.0.0.1') &&
   ) {
     const testAPI = '/api/test';
     axios.get(testAPI, {
-      validateStatus: status => {
-        return status === 204;
-      }
+      validateStatus: validateStatus204
     }).catch(res => {
       // const { status, headers, } = res;
       // if (status !== 204) {
-      axios.get(`${baseURL}${testAPI}`).then(res => {
+      axios.get(new URL(testAPI, baseURL).toString()).then(res => {
         const { status, headers, } = res;
-        if (status === 204) {
+        if (validateStatus204(status)) {
           const { defaults } = axios;
           defaults.baseURL = baseURL;
           return;

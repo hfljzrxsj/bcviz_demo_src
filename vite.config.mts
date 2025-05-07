@@ -273,6 +273,24 @@ export default defineConfig(({ mode, command }) => {
             // 'path': '//cdn.bootcdn.net/ajax/libs/react-is/18.2.0/umd/react-is.production.min.js'
             'path': '//lf3-cdn-tos.bytecdntp.com/cdn/expire-9-y/react-is/17.0.2/umd/react-is.production.min.js'
           },
+          {
+            'name': 'immer',
+            'var': 'immer',
+            // 'path': '//cdn.bootcdn.net/ajax/libs/react-is/18.2.0/umd/react-is.production.min.js'
+            'path': '//lf26-cdn-tos.bytecdntp.com/cdn/expire-9-y/immer/9.0.12/immer.umd.production.min.js'
+          },
+          {
+            'name': 'crc-32',
+            'var': 'CRC32',
+            // 'path': '//cdn.bootcdn.net/ajax/libs/react-is/18.2.0/umd/react-is.production.min.js'
+            'path': '//lf26-cdn-tos.bytecdntp.com/cdn/expire-9-y/crc-32/1.2.1/crc32.min.js'
+          },
+          // {
+          //   'name': 'md5',
+          //   'var': 'md5',
+          //   // 'path': '//cdn.bootcdn.net/ajax/libs/react-is/18.2.0/umd/react-is.production.min.js'
+          //   'path': '//lf9-cdn-tos.bytecdntp.com/cdn/expire-9-y/blueimp-md5/2.19.0/js/md5.min.js'
+          // },
           // {
           //   'name': 'react',
           //   'var': 'React',
