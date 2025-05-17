@@ -45,6 +45,7 @@ import AutoCompleteRenderOptionMenuItem from "./AutoCompleteRenderOption";
 import type { onEChartsParamFunc } from "./CommonECharts";
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import VisualMapSectionAutoComplete from "./VisualMapSectionAutoComplete";
+import BeiAnHao from "./BeiAnHao";
 export const uvHighlightColor = 'tan';
 export const clickMultiDotColor = 'red';
 const { isSafeInteger } = Number;
@@ -133,7 +134,7 @@ export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
     const { origin, protocol, hash, host, assign, reload, replace } = location;
-    if (!sessionStorage.getItem('hjx') && isPROD && origin !== baseURL && protocol === 'https:' && isChina()) {
+    if (!sessionStorage.getItem('hjx') && isPROD && origin !== baseURL && protocol === 'https:' && isChina) {
       // const href = baseURL + hash;
       const href = new URL(hash, baseURL);
       if (confirm(`后端服务已上线，点击“确认”跳转.${href}`)) {
@@ -168,7 +169,7 @@ export default function BCViz_new () {
     ...commonUseRequestParams,
     manual: true,
   });
-  const isBiggerThanShowAllCount = originTableData ? originTableData.length > showAllCount : false;
+  const isBiggerThanShowAllCount = (originTableData ? originTableData.length > showAllCount : false);  //isPROD &&
   useUpdateEffect(() => {
     mutate(undefined);
     if (originTableData) {
@@ -739,6 +740,7 @@ export default function BCViz_new () {
             </Paper>
           </SideCollapse>}
       </Paper>
+      <BeiAnHao />
       <Modal open={isModalOpen || loading} className={style['Modal'] ?? ''}><CircularProgress className={style['CircularProgress'] ?? ''} /></Modal>
 
       {/* </BCVizContext.Provider> */}

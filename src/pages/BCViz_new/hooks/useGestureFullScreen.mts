@@ -2,6 +2,7 @@ import { error, waitLastEventLoop } from "@/utils";
 import { useMemoizedFn, useUnmount, useEventListener, useKeyPress, useUpdate, useMount } from "ahooks";
 import { debounce, head, isEqual } from "lodash";
 import { useRef } from "react";
+const { freeze } = Object;
 type Child = EventTarget | ChildNode | Element | null | undefined;
 export function allEqual (...args: ReadonlyArray<unknown>): boolean {
   if (args.length === 0) {
@@ -27,8 +28,28 @@ export const isRightDom = (current: Child): current is HTMLDivElement => {
   return allEqual(firstChild, lastChild, firstElementChild, lastElementChild, childNodes.item(0), children.item(0));
 };
 const mouseup = 'mouseup';
+export const MouseEventListenerNames = [
+  'contextmenu',  //右键
+  'dblclick', //双击
+  'auxclick', //右键或中键，因兼容性似乎没反应
+  mouseup, //右键或中键
+] as (keyof HTMLElementEventMap)[];
+export const useMouseEventListenerOption = (current: HTMLElement | null) => freeze({
+  enable: Boolean(current),
+  target: current
+});
 
 const fullscreenKeyPress = ['ctrl', 'alt', 'shift', 'meta'].map(i => `${i}.f11`);
+
+export const isLeftMouseEvent = (e: Event) => {
+  if (e instanceof MouseEvent) {
+    const { button, altKey, ctrlKey, metaKey, shiftKey, relatedTarget, type } = e;
+    if (type === mouseup && (button === 0) && (!altKey && !ctrlKey && !metaKey && !shiftKey) && !relatedTarget) {
+      return true;
+    }
+  }
+  return false;
+};
 export const useGestureFullScreen = () => {
   const ref = useRef<HTMLDivElement>(null);
   const { current } = ref;
@@ -73,11 +94,8 @@ export const useGestureFullScreen = () => {
     if (!fullScreenEle || !allEqual(current, target, currentTarget)) {
       return;
     }
-    if (e instanceof MouseEvent) {
-      const { button, altKey, ctrlKey, metaKey, shiftKey, relatedTarget, type } = e;
-      if (type === mouseup && (button === 0) && (!altKey && !ctrlKey && !metaKey && !shiftKey) && !relatedTarget) {
-        return;
-      }
+    if (isLeftMouseEvent(e)) {
+      return;
     }
     e.preventDefault();
     return openFullScreen(fullScreenEle);
@@ -99,15 +117,7 @@ export const useGestureFullScreen = () => {
   //   current.removeEventListener('dblclick', clickEvent);
   // };
   // }, []);
-  useEventListener([
-    'contextmenu',  //右键
-    'dblclick', //双击
-    'auxclick', //右键或中键，因兼容性似乎没反应
-    mouseup, //右键或中键
-  ] as (keyof HTMLElementEventMap)[], clickEvent, {
-    enable: Boolean(current),
-    target: current
-  });
+  useEventListener(MouseEventListenerNames, clickEvent, useMouseEventListenerOption(current));
   useKeyPress(fullscreenKeyPress, (e) => {
     const fullScreenEle = getFullScreenEle(current);
     return openFullScreen(fullScreenEle);

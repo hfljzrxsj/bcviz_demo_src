@@ -95,7 +95,7 @@ export default function BCviz_Edit () {
       data,
       dataType,
     } = eCElementEvent as CallbackDataParams;
-    // console.log(eCElementEvent);
+    console.log(eCElementEvent);
 
     if (isSafeInteger(dataIndex) && name && dataType === 'node') {
       if (isUndefined(selectDot)) {

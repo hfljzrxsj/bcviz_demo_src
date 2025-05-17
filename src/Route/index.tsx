@@ -5,6 +5,7 @@ import BCViz_new from '@/pages/BCViz_new';
 // import BCviz_Edit from '@/pages/BCviz_Edit';
 import { Suspense, lazy } from 'react';
 import { Backdrop, CircularProgress } from '@mui/material';
+// import LineChartClick from '@/pages/Test/LineChartClick';
 
 // import { useSafeState } from 'ahooks';
 // import { useEffect } from 'react';
@@ -15,13 +16,14 @@ export const enum Path {
   edit = '/edit'
 }
 
+
 export default function MyRoute () {
   return (
     <Routes>
-
       <Route
         index
         element={<BCViz_new />}
+      // element={<LineChartClick />}
       />
       <Route
         path={Path.edit}

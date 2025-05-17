@@ -388,7 +388,7 @@ export default function FileUpload (props: FileUploadProps) {
 
 /* 马上要做的：
 1. 如果是超图，Tab标题、ECharts左上角title应该标注超图
-2. 自定义绘制图
+2. 自定义绘制图：历史记录、动态增减点、ECharts体验优化（连线优化、hover点强调、去掉loading）、帮助提示（返回上一页）
 3. 上传文件时，如果不是示例文件，且后端无hash，先上传后端
 
   */

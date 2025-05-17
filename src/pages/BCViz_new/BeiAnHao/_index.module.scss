@@ -1,0 +1,18 @@
+.beian {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+
+  &-Link {
+    padding: 9q;
+    background-color: rgba($color: #fff, $alpha: .5);
+    transition: 1s;
+
+    &:hover {
+      background-color: #fff;
+    }
+  }
+
+  // left: 50;
+}

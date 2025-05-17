@@ -20,7 +20,7 @@ import Tool from "../BCviz/Tool";
 import TabPanelInput from "./TabPanelInput/TabPanelInput";
 import { renderToStaticMarkup } from "react-dom/server";
 import { debounce, map } from "lodash";
-import { isChina } from "./getIntl";
+import { isChinaFn } from "./getIntl";
 import { isDEV } from "@/utils/isEnv";
 import { Modes } from "./utils";
 
@@ -48,7 +48,7 @@ export default () => {
     console.log(TabPanelInput);
     console.log(renderToStaticMarkup);
     console.log(debounce, map);
-    console.log(isChina);
+    console.log(isChinaFn);
     console.log(isDEV);
     console.log(Modes);
   }, []);

@@ -351,7 +351,7 @@ export const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphD
           shadowBlur: 5,
         },
         emphasis: {
-          focus: 'adjacency',
+          focus: 'adjacency', //TODO
           ...commonEmphasisOption,
         },
         // label: {

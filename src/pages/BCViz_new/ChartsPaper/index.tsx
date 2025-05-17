@@ -1,11 +1,5 @@
 import type { Children } from "@/types/children";
-import { Paper } from "@mui/material";
 import { TabPanel, type TabPanelProps } from "@mui/lab";
-import { useEffect, useRef } from "react";
-import { head, isEqual } from "lodash";
-import { useEventListener, useMemoizedFn, useKeyPress, useUpdate, useMount, useUnmount } from 'ahooks';
-import { debounce } from "@/pages/BCviz/utils";
-import { waitLastEventLoop } from "@/utils";
 import { useGestureFullScreen } from "../hooks/useGestureFullScreen.mjs";
 const { error } = console;
 
