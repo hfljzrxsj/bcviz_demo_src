@@ -740,9 +740,9 @@ export default function BCViz_new () {
             </Paper>
           </SideCollapse>}
       </Paper>
-      <BeiAnHao />
-      <Modal open={isModalOpen || loading} className={style['Modal'] ?? ''}><CircularProgress className={style['CircularProgress'] ?? ''} /></Modal>
 
+      <Modal open={isModalOpen || loading} className={style['Modal'] ?? ''}><CircularProgress className={style['CircularProgress'] ?? ''} /></Modal>
+      <BeiAnHao />
       {/* </BCVizContext.Provider> */}
     </>);
 }

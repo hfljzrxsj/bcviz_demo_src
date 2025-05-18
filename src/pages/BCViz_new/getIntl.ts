@@ -13,7 +13,8 @@ function getCurrentTimezone () {
 
 const isChinaFn = () => {
   const browserLanguageWithIntl = getBrowserLanguageWithIntl();
-  return getBrowserLanguage() === 'zh-CN' && getBrowserFirstLanguage() === 'zh-CN' && (browserLanguageWithIntl === 'zh-CN' || browserLanguageWithIntl === 'zh-Hans-CN') && getCurrentTimezone() === 'Asia/Shanghai' && new Date().getTimezoneOffset() === -480 && new Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Shanghai';
+  return getBrowserLanguage() === 'zh-CN' && getBrowserFirstLanguage() === 'zh-CN' && (browserLanguageWithIntl === 'zh-CN' || browserLanguageWithIntl === 'zh-Hans-CN') && new Date().getTimezoneOffset() === -480;
+  // && getCurrentTimezone() === 'Asia/Shanghai'&& new Intl.DateTimeFormat().resolvedOptions().timeZone === 'Asia/Shanghai'
 };
 
 export const isChina = isChinaFn();

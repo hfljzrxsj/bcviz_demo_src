@@ -106,6 +106,13 @@ const writeFileAndSymlink = (dataset, unzipDir_datasets, bcviz_demo_datasets, bc
 //   const [, , , ...others] = pathname.split('/');
 //   return others.join('/');
 // };
+
+// --test--
+console.log("Status: 403 Forbidden");
+// console.log("Status: 404 Not Found");
+// console.log("Status: 500 Internal Error");
+// --test--
+
 log("hjx: hjx");
 log();
 (async () => {
@@ -115,6 +122,23 @@ log();
       return;
     }
     const searchParam = new URLSearchParams(QUERY_STRING);
+
+    const dataset = searchParam.get(datasetKey);
+    /** /etc/nginx/sites-available/v1/script.mjs */
+    const __filePath = fileURLToPath(import.meta.url);
+    /** /etc/nginx/sites-available/v1 */
+    const unzipDir = dirname(__filePath);
+    /** /etc/nginx/sites-available */
+    const baseDir = dirname(unzipDir);
+    /** /etc/nginx/sites-available/bcviz_demo */
+    const bcviz_demo = join(baseDir, 'bcviz_demo');
+    const datasets = 'datasets';
+    /** /etc/nginx/sites-available/v1/datasets */
+    const unzipDir_datasets = join(unzipDir, datasets);
+    /** /etc/nginx/sites-available/bcviz_demo/datasets */
+    const bcviz_demo_datasets = join(bcviz_demo, datasets);
+
+
     switch (exactPathname(DOCUMENT_URI)) {
       case 'MBS': {
         if (!QUERY_STRING) {
@@ -138,25 +162,19 @@ log();
         });
         break;
       }
-      case 'construct': {
-        const dataset = searchParam.get(datasetKey);
+      case 'upload': {
         if (!dataset) {
           return;
         }
-        /** /etc/nginx/sites-available/v1/script.mjs */
-        const __filePath = fileURLToPath(import.meta.url);
-        /** /etc/nginx/sites-available/v1 */
-        const unzipDir = dirname(__filePath);
-        /** /etc/nginx/sites-available */
-        const baseDir = dirname(unzipDir);
-        /** /etc/nginx/sites-available/bcviz_demo */
-        const bcviz_demo = join(baseDir, 'bcviz_demo');
-        const datasets = 'datasets';
-        /** /etc/nginx/sites-available/v1/datasets */
-        const unzipDir_datasets = join(unzipDir, datasets);
-        /** /etc/nginx/sites-available/bcviz_demo/datasets */
-        const bcviz_demo_datasets = join(bcviz_demo, datasets);
         await writeFileAndSymlink(dataset, unzipDir_datasets, bcviz_demo_datasets, bcviz_demo);
+        break;
+      }
+      case 'construct': {
+        if (!dataset) {
+          return;
+        }
+
+        // start to construct
         const s_min = searchParam.get('s_min');
         const t_min = searchParam.get('t_min');
         const { name, ext } = parse(dataset);
@@ -203,5 +221,8 @@ log();
       //   break;
       // }
     }
-  } catch (e) { error(e); }
+  } catch (e) {
+    error(e);
+    process.exit();
+  }
 })();
