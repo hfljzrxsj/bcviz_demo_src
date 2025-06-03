@@ -10,9 +10,8 @@ import type { JSON_ARR, WillPatchData, parseData } from "../FileUpload";
 import type { SetStateType } from "../types";
 import FileUploadExample from "../FileUploadExample";
 import { createOrAddIdb, type IndexedDBProps } from "@/utils/idb";
-import { getFileIdb } from "@/pages/BCViz_new/utils";
 import { toast } from 'react-toastify';
-import axios from "axios";
+import { getFile } from "@/pages/BCViz_new/api";
 const { revokeObjectURL, createObjectURL } = URL;
 const { freeze } = Object;
 const { error } = console;
@@ -40,7 +39,7 @@ const unloadRevokeDownloadUrl = (downloadUrl: string) => (ele: Window | Document
   //   console.log(ele);
   // }
 };
-const getDownloadUrl = (file: Parameters<typeof createObjectURL>[0]) => {
+export const getDownloadUrl = (file: Parameters<typeof createObjectURL>[0]) => {
   const downloadUrl = createObjectURL(file);
   waitLastEventLoop(() => {
     const composeUnloadRevokeDownloadUrl = unloadRevokeDownloadUrl(downloadUrl);
@@ -92,11 +91,11 @@ export const idbCommonArgs: IndexedDBProps = freeze({
   DBname: 'HJX',
   storeName: 'HXJ',
 });
-interface fetchDataReturn {
+export interface fetchDataReturn {
   readonly fileInfo: FileInfoType;
   readonly fileData: string;
 }
-const withDownloadUrl = (data: fetchDataReturn): fetchDataReturn => {
+export const withDownloadUrl = (data: fetchDataReturn): fetchDataReturn => {
   return ({
     ...data,
     fileInfo: {
@@ -105,38 +104,6 @@ const withDownloadUrl = (data: fetchDataReturn): fetchDataReturn => {
     }
   });
 };
-export const fetchData = (url: string) => getFileIdb<fetchDataReturn>(url).then(withDownloadUrl).catch(() => axios.get(url, {
-  responseType: 'text'
-}).then(async res => {
-  const headers = new Headers(res.headers as Record<string, string>);
-  // const data = await res.text();
-  const { data } = res;
-  // if (typeof data === 'string') {
-  // try {
-  const downloadUrl = getDownloadUrl(new Blob([data]));
-  const willResolveData = {
-    fileInfo: {
-      lastModified: Date.parse(headers.get('last-modified') ?? ''),
-      name: url,
-      size: parseInt(headers.get('content-length') ?? ''),
-      type: headers.get('content-type') ?? '',
-      downloadUrl,
-    },
-    fileData: data,
-  };
-  createOrAddIdb({
-    ...idbCommonArgs,
-    IDBValidKey: url,
-    data: willResolveData,
-  });
-  return willResolveData;
-  // } catch {
-  //   alert('some error occur');
-  //   return;
-  // }
-  // }
-  // return;
-}, error)).catch(error);
 export default function FileUploadSimple<T extends JSON_ARR> (props: {
   readonly parseData: parseData<T>;
   readonly setWillPatchData: SetStateType<WillPatchData<T>>;
@@ -157,7 +124,7 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
     });
   });
   const fetchDataFunc = useMemoizedFn((url: string) => {
-    return fetchData(url).then((res) => {
+    return getFile(url).then((res) => {
       if (res) {
         const { fileInfo, fileData } = res;
         const parseFileData = parseData(fileData);

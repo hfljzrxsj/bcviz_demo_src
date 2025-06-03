@@ -19,6 +19,7 @@ $t3: linear-gradient(hsla(0, 100%, 75%, 0.8),
     hsla(300, 100%, 75%, 0.8));
 $t4: linear-gradient(#f9ccff, #e6bbf9, #9ec6f9, #55e6ee, #91f5d1, #f9ffbf);
 $t5: linear-gradient(#652487, #443ac3, #0174b7, #04988e);
+$t6: linear-gradient(90deg, #ffc590 2.48%, #fd82d6 25.22%, #b89cf8 68.77%, #66c0ff 95.38%);
 
 %t6 {
   $t7: linear-gradient(45deg, var(--light-primary), var(--light-info), var(--light-success), var(--light-warning), var(--light-danger));

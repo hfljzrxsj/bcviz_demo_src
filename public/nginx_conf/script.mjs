@@ -7,13 +7,14 @@ import {
   // execSync,
   // execFileSync,
   // spawnSync,
-} from 'child_process';
-import { readFileSync, existsSync, writeFileSync, symlinkSync } from 'fs';
-import { stdin, env } from 'process';
-import { fileURLToPath } from 'url';
-import { dirname, join, parse } from 'path';
-import { URLSearchParams } from 'url';
+} from 'node:child_process';
+import { readFileSync, existsSync, writeFileSync, symlinkSync } from 'node:fs';
+import { stdin, env } from 'node:process';
+import { fileURLToPath, URLSearchParams } from 'node:url';
+import { dirname, join, parse } from 'node:path';
+// import { createHash } from 'node:crypto';
 const { log, error } = console;
+// const defaultTxt = ['example.txt', 'writer.txt', 'marvel.txt', 'paper.txt', 'example_cohesion.txt', 'writer_cohesion.txt', 'marvel_cohesion.txt', 'paper_cohesion.txt'];
 const initVertexs = ['0'];
 /**
  * @param {string} vertexsStr 
@@ -79,6 +80,30 @@ const searchStringParse = (params) => {
  * @param {string} pathname
  */
 const exactPathname = (pathname) => pathname.split('/').slice(3).join('/');
+// 校验文件名是否合法
+/**
+ * @param {string|null} filename
+ * @returns {filename is string}
+ */
+function validateFilename (filename) {
+  if (typeof filename !== 'string' || filename.trim() === '') {
+    throw new Error('Filename is required');
+  }
+  // 禁止路径分隔符
+  if (filename.includes('/') || filename.includes('\\')) {
+    throw new Error('Filename cannot contain path separators');
+  }
+  // 禁止特殊目录名称
+  if (filename === '.' || filename === '..') {
+    throw new Error('Filename cannot be "." or ".."');
+  }
+  // 可选：检查Windows保留名称（如CON、NUL等）
+  // const reserved = ['CON', 'PRN', 'AUX', 'NUL', 'COM1', 'LPT1']; // 完整列表需补全
+  // if (reserved.includes(filename.toUpperCase())) {
+  //   throw new Error('Filename is a reserved system name');
+  // }
+  return true;
+}
 /**
  * @param {string} dataset 
  * @param {string} unzipDir_datasets /etc/nginx/sites-available/v1/datasets
@@ -162,18 +187,42 @@ log();
         });
         break;
       }
+      // case 'checkEqualExist': {
+      //   const filename = searchParam.get('filename');
+      //   const length = searchParam.get('length');
+      //   if (!filename
+      //     || !length
+      //     || !validateFilename(filename)) {
+      //     return;
+      //   }
+      //   // 如果文件名是示例文件
+      //   if (defaultTxt.includes(filename)) {
+      //     return;
+      //   }
+      //   const filePath = join(bcviz_demo, filename);
+      //   // 文件路径存在
+      //   if (existsSync(filePath)) {
+      //     const fileContent = readFileSync(filePath, 'utf8');
+      //     // const existFileMD5 = createHash('md5').update(fileContent).digest('hex');
+      //     // 两个文件长度相同
+      //     if (parseInt(length) === fileContent.length) {
+      //       return;
+      //     }
+      //   }
+      //   log('1');
+      //   break;
+      // }
       case 'upload': {
-        if (!dataset) {
+        if (!validateFilename(dataset)) {
           return;
         }
         await writeFileAndSymlink(dataset, unzipDir_datasets, bcviz_demo_datasets, bcviz_demo);
         break;
       }
       case 'construct': {
-        if (!dataset) {
+        if (!validateFilename(dataset)) {
           return;
         }
-
         // start to construct
         const s_min = searchParam.get('s_min');
         const t_min = searchParam.get('t_min');

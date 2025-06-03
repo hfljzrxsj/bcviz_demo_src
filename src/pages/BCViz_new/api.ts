@@ -1,6 +1,4 @@
 import axios from "axios";
-import { createOrAddIdb } from "@/utils/idb";
-import { idbCommonArgs } from "../BCviz/FileUploadSimple";
 import { Modes, ModesShortcut, getFileIdb } from "./utils";
 import { UVenum } from "../BCviz/utils";
 import { parseStringToObjArray } from "./parsePQB";
@@ -10,6 +8,8 @@ import { isDEV } from "@/utils/isEnv";
 import { parseGraphDataSuper, parseTableData } from "../BCviz/FileUpload";
 import { pickBy, negate, isUndefined, omitBy } from "lodash";
 import type { OriginDataObjReadonlyArr, OriginGraphDataSuperReadonlyArr } from "../BCviz/types";
+import { createOrAddIdb } from "@/utils/idb";
+import { fetchDataReturn, withDownloadUrl, getDownloadUrl, idbCommonArgs } from "../BCviz/FileUploadSimple";
 const { error } = console;
 const { isSafeInteger } = Number;
 const { } = Object;
@@ -282,7 +282,23 @@ export const uploadFile = (data: string, dataset: string) => {
     }
   });
 };
-export const constructBCviz = (data: string, dataset: string) => {
+export const uploadBCviz = (data: string, dataset: string) => {
+  return axios.post(getApiVersionPrefix('upload'), data, {
+    params: {
+      dataset
+    }
+  });
+};
+export const constructBCviz = (dataset: string) => {
+  return axios.get(getApiVersionPrefix('construct'), {
+    params: {
+      dataset,
+      s_min: 1,
+      t_min: 1
+    }
+  });
+};
+export const constructBCviz_old = (data: string, dataset: string) => {
   return axios.post(getApiVersionPrefix('construct'), data, {
     params: {
       dataset,
@@ -291,3 +307,42 @@ export const constructBCviz = (data: string, dataset: string) => {
     }
   });
 };
+export const getFile = (url: string) => getFileIdb<fetchDataReturn>(url).then(withDownloadUrl).catch(() => axios.get(url, {
+  responseType: 'text'
+}).then(async (res) => {
+  const headers = new Headers(res.headers as Record<string, string>);
+  // const data = await res.text();
+  const { data } = res;
+  // if (typeof data === 'string') {
+  // try {
+  const downloadUrl = getDownloadUrl(new Blob([data]));
+  const willResolveData = {
+    fileInfo: {
+      lastModified: Date.parse(headers.get('last-modified') ?? ''),
+      name: url,
+      size: parseInt(headers.get('content-length') ?? ''),
+      type: headers.get('content-type') ?? '',
+      downloadUrl,
+    },
+    fileData: data,
+  };
+  createOrAddIdb({
+    ...idbCommonArgs,
+    IDBValidKey: url,
+    data: willResolveData,
+  });
+  return willResolveData;
+  // } catch {
+  //   alert('some error occur');
+  //   return;
+  // }
+  // }
+  // return;
+}, error)).catch(error);
+export const headFileExist = (fileName: string) => axios.head(fileName, {
+  validateStatus (status) {
+    return status === 200 || status === 304;
+  },
+}).then(() => true, () => false);
+
+// export const checkEqualExist = (filename, length) => axios.get(filename);

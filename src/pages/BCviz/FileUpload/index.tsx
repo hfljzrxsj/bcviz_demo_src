@@ -5,7 +5,8 @@ import style from './_index.module.scss';
 import { type SetStateType } from "../types";
 import { type SetState } from 'ahooks/lib/createUseStorageState';
 // import clsx from 'clsx';
-import FileUploadSimple, { fetchData } from "../FileUploadSimple";
+import FileUploadSimple, { fetchDataReturn } from "../FileUploadSimple";
+import { getFile, headFileExist, uploadFile } from "@/pages/BCViz_new/api";
 import classNames from "clsx";
 import { unstable_batchedUpdates } from "react-dom";
 import type { OriginDataObj, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr, OriginGraphDataArr, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr } from "../types";
@@ -17,8 +18,10 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 // import type { NullValue } from "vite/node_modules/rollup";
 // import type { NullValue } from "rollup";
 import { ToastContainer } from "react-toastify";
-import { TabKey, TabKey2Title } from "@/pages/BCViz_new/utils";
+import { TabKey, TabKey2Title, getFileIdb } from "@/pages/BCViz_new/utils";
 import { Path } from "@/Route";
+import { getIdb } from "@/utils/idb";
+import axios from "axios";
 const { error } = console;
 // import {
 //   usePopupState,
@@ -177,7 +180,7 @@ export default function FileUpload (props: FileUploadProps) {
       return;
     }
     const arrFileNames = arrEntries.map(([, v]) => v);
-    Promise.all(arrFileNames.map((fileName) => (fetchData(fileName)))).then(arrRes => {
+    Promise.all(arrFileNames.map((fileName) => (getFile(fileName)))).then(arrRes => {
       // if (!fileNameKeys.every(fileNameKey => arrKeys.includes(fileNameKey))) {
       //   return throwError();
       // }
@@ -324,10 +327,31 @@ export default function FileUpload (props: FileUploadProps) {
             disabled={!isShouldSetData}
             onClick={() => unstable_batchedUpdates(() => {
               if (isShouldSetData) {
-                const [dataset, BCviz_file] = willPatchData.map(({ fileName }) => fileName);
+                const filenames = willPatchData.map(({ fileName }) => fileName);
+
+                const [dataset, BCviz_file] = filenames;
                 if (!dataset || !BCviz_file) {
                   return;
                 }
+                // const dataset_content = getFileIdb(dataset)
+
+                // 文件不存在就上传文件
+                filenames.map(async filename => {
+                  if (fileUploadSimpleProps.some(({ defaultTxt }) => {
+                    return defaultTxt.includes(filename); //如果与示例文件同名
+                  })) {
+                    return;
+                  }
+                  const dataset_content = await getFileIdb<fetchDataReturn>(filename).then(({ fileData }) => fileData, error);
+                  if (!dataset_content) {
+                    return;
+                  }
+                  const isExist = await headFileExist(filename);
+                  if (!isExist) {
+                    uploadFile(dataset_content, filename);
+                  }
+                });
+
                 willPatchData.forEach(({ fileName, data }, ind) => {
                   //@ts-expect-error
                   setDatas[ind]?.(data);
@@ -388,7 +412,7 @@ export default function FileUpload (props: FileUploadProps) {
 
 /* 马上要做的：
 1. 如果是超图，Tab标题、ECharts左上角title应该标注超图
-2. 自定义绘制图：历史记录、动态增减点、ECharts体验优化（连线优化、hover点强调、去掉loading）、帮助提示（返回上一页）
+2. 自定义绘制图：历史记录、动态增减点、构建时s_min和t_min可以自定义（confirm时确认）、ECharts体验优化（连线优化、hover点强调、去掉loading）、帮助提示（返回上一页）
 3. 上传文件时，如果不是示例文件，且后端无hash，先上传后端
 
   */
@@ -396,7 +420,7 @@ export default function FileUpload (props: FileUploadProps) {
 // 拖放文件
 // useTransition（startTransition）、useDeferredValue改造，src\pages\BCviz\FileUploadSimple\index.tsx上传文件解析错误也要toast）
 // react-toast -> Alert/Notification
-// 设置：主题色、设置语言（react-intl）、全屏，使用SpeedDial来快速全屏
+// 设置：主题色、全屏，使用SpeedDial来快速全屏
 // 打开文件弹窗可关闭（关闭按钮），打开新图两处改fieldset
 // 根据location.search来载入设置
 // 图表全屏监听longpress（ahooks）
@@ -405,11 +429,12 @@ export default function FileUpload (props: FileUploadProps) {
 // 打开文件示例一次性加载2个
 // 点击顶点弹出toast介绍顶点详细信息
 // useSetInputST交给TabPanelInput自己管理
-// Tooltip移到example时，从indexedb拿文件信息（onOpen时拿）
+// Tooltip移到example，从indexedb拿文件信息（onOpen时拿）
 // 把BCviz_new所有值全部迁移到useContext
 // 没结果时，展示在ECharts里的信息需要展示全部
 // manifest缓存文件（src\pages\BCViz_new\server_conf\manifest.appcache.md）
 // 解析TXT文件、解析查询结果、解析超图->webworker（src\pages\BCViz_new\webWorker.md）
+// 顶点索引稠密度的表格
 
 
 // 失败：

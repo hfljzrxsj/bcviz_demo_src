@@ -889,7 +889,8 @@ export default defineConfig(({ mode, command }) => {
             hoistTransitiveImports: true,
             plugins: [
               // commonjs() as OutputPlugin
-            ]
+            ],
+            // format: 'iife',
             // preserveModules: true,
           },
           plugins: [
@@ -906,6 +907,7 @@ export default defineConfig(({ mode, command }) => {
           propertyReadSideEffects: false,  // 优化纯属性访问，减少属性访问副作用检查
           tryCatchDeoptimization: false,   // 禁用 try-catch 的降级处理，true：Rollup 会认为 ‌try 代码块中的代码可能存在副作用‌，从而 ‌禁用对其中代码的 Tree-Shaking 优化‌（保守策略）；false 时，Rollup 会 ‌尝试优化 try 块中的代码‌，像普通代码一样进行 Tree-Shaking（激进策略）
         },
+
         // 'external': ['react/jsx-runtime']
       },
       // 'target': 'modules', // 设置最终构建的浏览器兼容目标  //es2015(编译成es5) | modules

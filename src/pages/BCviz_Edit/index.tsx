@@ -19,7 +19,7 @@ import { initUVcount, testGraphData, testTableData } from "./devTestData";
 import axios from "axios";
 import { waitMiddleEventLoop } from "@/utils";
 import { createOrAddIdb } from "@/utils/idb";
-import { constructBCviz, uploadFile } from "../BCViz_new/api";
+import { constructBCviz, constructBCviz_old, headFileExist, uploadFile } from "../BCViz_new/api";
 import { useNavigate } from "react-router";
 // import md5 from 'md5';
 import { str } from 'crc-32';
@@ -95,7 +95,6 @@ export default function BCviz_Edit () {
       data,
       dataType,
     } = eCElementEvent as CallbackDataParams;
-    console.log(eCElementEvent);
 
     if (isSafeInteger(dataIndex) && name && dataType === 'node') {
       if (isUndefined(selectDot)) {
@@ -188,13 +187,14 @@ export default function BCviz_Edit () {
             const fileNameBEWithExt_cohesion = `${hash}_cohesion.txt`;
             const datasetsFileFolder = 'datasets/';
             // const fileNameBEWithExt = fileNameBEWithExt;//`${datasetsFileFolder}${fileNameBEWithExt}`;
-            const fetchSeeIsExit = await Promise.all([fileNameBEWithExt, fileNameBEWithExt_cohesion].map(fileName => axios.head(fileName, {
-              validateStatus (status) {
-                return status === 200 || status === 304;
-              },
-            }))).then(() => true, () => false);
+            const fetchSeeIsExit = await Promise.all([fileNameBEWithExt, fileNameBEWithExt_cohesion].map(headFileExist)).then((res) => res.every(Boolean), () => false);
+            console.log(fetchSeeIsExit);
+
             if (!fetchSeeIsExit) {
-              await constructBCviz(text, fileNameBEWithExt);
+              await uploadFile(text, fileNameBEWithExt);
+              await waitMiddleEventLoop();
+              await constructBCviz(fileNameBEWithExt);
+              // await constructBCviz_old(text, fileNameBEWithExt);
               await waitMiddleEventLoop();
               // await uploadFile(text, fileNameBEWithExt);
             }

@@ -5,6 +5,8 @@ import { useRef } from "react";
 import { useEventListener, useLocalStorageState } from "ahooks";
 import { MouseEventListenerNames, isLeftMouseEvent, useMouseEventListenerOption } from "../hooks/useGestureFullScreen.mjs";
 const { MAX_SAFE_INTEGER } = Number;
+const { host, hostname } = location;
+const domainName = 'bcviz-demo.site';
 export default function BeiAnHao () {
   const ref = useRef<HTMLDivElement>(null);
   const [isNotShowBeian, setIsNotShowBeian] = useLocalStorageState<string>('beian');
@@ -15,7 +17,7 @@ export default function BeiAnHao () {
     setIsNotShowBeian('1');
     e.preventDefault();
   }, useMouseEventListenerOption(ref.current));
-  return (!isNotShowBeian && isChina) ?
+  return (!isNotShowBeian && isChina && host === domainName && hostname === domainName) ?
     <div className={style['beian'] ?? ''}
       style={{ zIndex: MAX_SAFE_INTEGER }}
     >
