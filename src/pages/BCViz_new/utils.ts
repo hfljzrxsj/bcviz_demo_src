@@ -1,10 +1,10 @@
 import { getIdb, type IndexedDBGetProps, type IndexedDBProps } from "@/utils/idb";
 import { isPROD } from "@/utils/isEnv";
-import { clamp, groupBy, head, isPlainObject, isUndefined, mapValues, orderBy, sortBy } from "lodash";
+import { clamp, groupBy, head, isPlainObject, isUndefined, mapValues, sortBy } from "lodash";
 import type { execTextType, UVReturnType } from "./api";
 import { tanColorContentJsx } from "./Echarts";
-import type { getCommonValueFromTableDataParamers, getCommonValueFromTableDataReturnType, GraphNeighbor, OriginDataObj, OriginDataObjReadonlyArr, OriginDataObjWithIndexArr, OriginGraphDataReadonlyArr, PosDataObj, PosDataObjArr, typeOfGetCommonValueFromTableData } from "../BCviz/types";
-import { getCommonValueFromTableData, getDataArrWithPos, getGraphNeighbor, getGroupByDot, getInitGraphNeighbor, getOneDotNeighbor, marginSize, UVenum, uvIndObj, uvLength, type getDataArrWithPosParameters, type getDataArrWithPosType, type VisualMapSectionSingle } from "../BCviz/utils";
+import type { getCommonValueFromTableDataReturnType, GraphNeighbor, OriginDataObj, OriginDataObjReadonlyArr, OriginDataObjWithIndexArr, PosDataObj, PosDataObjArr } from "../BCviz/types";
+import { getCommonValueFromTableData, getDataArrWithPos, getGraphNeighbor, getGroupByDot, getOneDotNeighbor, marginSize, UVenum, uvIndObj, type getDataArrWithPosParameters, type getDataArrWithPosType, type VisualMapSectionSingle } from "../BCviz/utils";
 import { clickMultiDotColor, showAllCount } from ".";
 
 const { freeze, entries, values } = Object;
@@ -12,13 +12,13 @@ const { max } = Math;
 export const isUseIdbCache = <T = object> (res: T | undefined): res is T => Boolean((isPROD || true) && res && isPlainObject(res));
 
 export const enum Modes {
-  'Maximum Biclique' = 'Maximum Biclique',
+  'Maximum Edge Biclique' = 'Maximum Edge Biclique',
   'Maximal Biclique Enumeration' = 'Maximal Biclique Enumeration',
   '(p,q)-biclique Counting' = '(p,q)-biclique Counting',
   'Hierarchical Subgraphs Search' = 'Hierarchical Subgraphs Search',
 }
 export const ModesShortcut: Record<Modes, string> = freeze(({
-  'Maximum Biclique': 'MEB',
+  'Maximum Edge Biclique': 'MEB',
   'Maximal Biclique Enumeration': 'MBE',
   '(p,q)-biclique Counting': 'PQB',
   'Hierarchical Subgraphs Search': '',
@@ -99,16 +99,15 @@ function calculateCirclePositions (radii: OriginDataObjReadonlyArr, UV?: UVRetur
 
   return positions;
 }
-export const getDataArrWithPosForECharts: getDataArrWithPosType = (tableData, graphData, { xRadix, getYPos, svgWidth },
-  graphSvgHeght,
+export const getDataArrWithPosForECharts: getDataArrWithPosType = (tableData, graphData, commonValue,
 ) => {
-  if (!graphData || !tableData) {
+  if (!graphData || !tableData || !commonValue) {
     return [];
   }
+  const { svgWidth } = commonValue;
+
   const graphNeighbor: GraphNeighbor = getGraphNeighbor(graphData);
-  const realWidth = svgWidth - marginSize * 2;
   const tableDataGroupByK = groupBy(tableData, ({ k }) => k) as unknown as Record<UVenum, OriginDataObjReadonlyArr>;
-  const graphGroupDiffY = (graphSvgHeght - marginSize * 2) / (uvLength - 1);
   const tableDataGroupToIndex = mapValues(tableDataGroupByK, (arr) => {
     return new Map(sortBy(arr, ({ kInd }) => kInd).map(({ kInd }, ind) => ([kInd, ind])));
   });
@@ -116,7 +115,7 @@ export const getDataArrWithPosForECharts: getDataArrWithPosType = (tableData, gr
   // console.log((graphXs), tableDataGroupByK);
   const diffY = max(...(values(graphXs).flat())) / 2;
   const dataArrWithPos: PosDataObjArr = tableData?.map((oneData, i) => {
-    const { v, k, kInd } = oneData;
+    const { k, kInd } = oneData;
     return ({
       ...oneData,
       i,
@@ -163,14 +162,14 @@ export const getTableDataWithIndOrFilter = ((isShowAll: boolean, tableData?: Ori
 
 export const getDataArrWithPosWithCommonValueFromTableData = (tableData: getDataArrWithPosParameters[0], graghData: getDataArrWithPosParameters[1], {
   svgWidth, svgHeight,
-}: Pick<getCommonValueFromTableDataReturnType, 'svgWidth' | 'svgHeight'>) => {
+}: Pick<NonNullable<getCommonValueFromTableDataReturnType>, 'svgWidth' | 'svgHeight'>) => {
   return getDataArrWithPos(tableData, graghData, getCommonValueFromTableData(tableData, {
     svgWidth, svgHeight,
   }), svgHeight);
 };
-export const getDataArrWithPosWithCommonValueFromTableDataForECharts = (tableData: getDataArrWithPosParameters[0], graghData: getDataArrWithPosParameters[1], {
+export const getDataArrWithPosWithCommonValueFromTableDataForECharts: typeof getDataArrWithPosWithCommonValueFromTableData = (tableData, graghData, {
   svgWidth, svgHeight,
-}: Pick<getCommonValueFromTableDataReturnType, 'svgWidth' | 'svgHeight'>) => {
+}) => {
   return getDataArrWithPosForECharts(tableData, graghData, getCommonValueFromTableData(tableData, {
     svgWidth, svgHeight,
   }), svgHeight);

@@ -200,10 +200,29 @@ const getLineStyleWidthFunc = (isBiggerThanShowAllCount: boolean, superWidthArr:
   }
 };
 export type Link = NonNullable<GraphSeriesOption['links']>[number];
-export const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphData: OriginGraphDataSuperReadonlyArr | undefined, mode?: Modes, size: execTextType['size'] = undefined, { max: maxV, min: minV } = getCommonValueFromTableData(dataArrWithPos, svgWH), isBiggerThanShowAllCount = false): EChartsOption => {
-  if (!dataArrWithPos || !graphData) {
+export const getGraphOption = (
+  {
+    dataArrWithPos,
+    graphData,
+    mode,
+    size = undefined,
+    commonValueFromTableData = getCommonValueFromTableData(dataArrWithPos, svgWH),
+    isBiggerThanShowAllCount = false,
+    emphasisFocus = 'adjacency',
+  }: {
+    readonly dataArrWithPos: PosDataObjArr | undefined;
+    readonly graphData: OriginGraphDataSuperReadonlyArr | undefined;
+    readonly mode?: Modes;
+    readonly size?: execTextType['size'];
+    readonly commonValueFromTableData?: getCommonValueFromTableDataReturnType;
+    readonly isBiggerThanShowAllCount?: boolean;
+    readonly emphasisFocus?: NonNullable<GraphSeriesOption['emphasis']>['focus'];
+  }): EChartsOption => {
+  if (!dataArrWithPos || !graphData || !commonValueFromTableData) {
     return {};
   }
+  const { max: maxV, min: minV } = commonValueFromTableData;
+
   const graphLinkColor = getGraphLinkColor(dataArrWithPos, graphData);
   // console.log(symbolSizeBase, minRadius, maxV, minV);
   // const isBiggerThanShowAllCount = dataArrWithPos.length > showAllCount;
@@ -351,7 +370,7 @@ export const getGraphOption = (dataArrWithPos: PosDataObjArr | undefined, graphD
           shadowBlur: 5,
         },
         emphasis: {
-          focus: 'adjacency', //TODO
+          focus: emphasisFocus,
           ...commonEmphasisOption,
         },
         // label: {
@@ -373,7 +392,7 @@ const getLineItemOptionFromColor = (color: PosDataObj['color']): LineDataItemOpt
   symbol: 'circle',
 } : {});
 export const inputLabels: Readonly<Partial<Record<Modes, InputSTSetState>>> = freeze({
-  [Modes['Maximum Biclique']]: {
+  [Modes['Maximum Edge Biclique']]: {
     s: 'Minimum vertex count in U',
     t: 'Minimum vertex count in V'
   },
@@ -609,10 +628,10 @@ export default function Echarts (props: {
         const commonValueFromTableData = getCommonValueFromTableData(tableData, svgWH);
         const dataArrWithPos = getDataArrWithPos(tableData, graphData, commonValueFromTableData, innerHeight);
         // const dataArrWithPos = getDataArrWithPosWithCommonValueFromTableData(tableData, graphData, svgWH);
-        return getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData, true);
+        return getGraphOption({ dataArrWithPos, graphData, mode: selectMode, size: undefined, commonValueFromTableData, isBiggerThanShowAllCount: true });
       }
     }
-    const option = getGraphOption(dataArrWithPos, graphData, selectMode, undefined, commonValueFromTableData);
+    const option = getGraphOption({ dataArrWithPos, graphData, mode: selectMode, size: undefined, commonValueFromTableData });
 
     return option;
   }, [dataArrWithPos, superData]));
@@ -641,7 +660,7 @@ export default function Echarts (props: {
       // setTabToResult();
     }
     // setTabToResult();
-    return getGraphOption(resultTable, resultGraph);
+    return getGraphOption({ dataArrWithPos: resultTable, graphData: resultGraph });
     // if (isNotGetResult) {
     // toastEmpty();
     // } 

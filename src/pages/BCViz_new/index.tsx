@@ -46,6 +46,7 @@ import type { onEChartsParamFunc } from "./CommonECharts";
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import VisualMapSectionAutoComplete from "./VisualMapSectionAutoComplete";
 import BeiAnHao from "./BeiAnHao";
+import Loading from "../BCviz_Edit/Loading";
 export const uvHighlightColor = 'tan';
 export const clickMultiDotColor = 'red';
 const { isSafeInteger } = Number;
@@ -130,6 +131,8 @@ const CustomTab = ({ tabKey, ...props }: Omit<Parameters<typeof Tab>[0], 'label'
 }) => <Tab label={TabKey2Title[tabKey]} value={tabKey} className={style['Tab'] ?? ''}
   {...props}
   />;
+const Select_Mode = 'Select Mode';
+const Choose_Rank = 'Choose Rank';
 export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
@@ -219,7 +222,7 @@ export default function BCViz_new () {
   const [tab, setTab] = useSafeState(TabKey.table);
   const [selectMode, setSelectMode, resetSelectMode] = useResetState(
     // isDEV ? Modes['Hierarchical Subgraphs Search'] :
-    Modes['Maximum Biclique']);
+    Modes['Maximum Edge Biclique']);
   const [selectEngine, setSelectEngine] = useSafeState<keyofRenderingEngine>(
     // isDEV ? 'SVG Engine' :
     'ECharts Engine');
@@ -505,17 +508,17 @@ export default function BCViz_new () {
               <FormControl fullWidth>
                 <InputLabel
                 // title={isEngineECharts ? `${Modes['Hierarchical Subgraphs Search']} is available only in SVG Engine` : ''}
-                >Select Mode</InputLabel>
+                >{Select_Mode}</InputLabel>
                 <Select<Modes>
                   value={selectMode}
                   onChange={(e) => {
                     setSelectMode(e.target.value as Modes);
                   }}
-                  label="Select Mode"
+                  label={Select_Mode}
                   fullWidth
                 >
                   {([
-                    Modes['Maximum Biclique'],
+                    Modes['Maximum Edge Biclique'],
                     Modes['Maximal Biclique Enumeration'],
                     Modes['(p,q)-biclique Counting'],
                     Modes['Hierarchical Subgraphs Search'],
@@ -552,7 +555,7 @@ export default function BCViz_new () {
               <TabContext value={selectMode}>
                 <TabPanelInput
                   {...propsTabPanelInput}
-                  modeKey={Modes['Maximum Biclique']}
+                  modeKey={Modes['Maximum Edge Biclique']}
                 />
                 <TabPanelInput
                   {...propsTabPanelInput}
@@ -564,7 +567,7 @@ export default function BCViz_new () {
                 />
                 <TabPanel value={Modes['Hierarchical Subgraphs Search']} className={style['TabPanel'] ?? ''}>
                   <Paper elevation={24} className={style['Paper-text'] ?? ''}>
-                    <InputSize value={size} setSize={setSize} max={commonValueFromTableData.max} />
+                    {commonValueFromTableData ? <InputSize value={size} setSize={setSize} max={commonValueFromTableData.max} /> : null}
                   </Paper>
                 </TabPanel>
               </TabContext>
@@ -607,8 +610,9 @@ export default function BCViz_new () {
                 }}
                 renderInput={(params) => <AutocompleteRenderInput
                   {...params}
-                  label='Choose Rank'
-                  placeholder="Choose Rank"
+                  label={Choose_Rank}
+                  placeholder={Choose_Rank}
+                  title={Choose_Rank}
                 />}
                 renderOption={(props, { label, ...option }, state) => {
                   const { autoFocus,
@@ -740,8 +744,7 @@ export default function BCViz_new () {
             </Paper>
           </SideCollapse>}
       </Paper>
-
-      <Modal open={isModalOpen || loading} className={style['Modal'] ?? ''}><CircularProgress className={style['CircularProgress'] ?? ''} /></Modal>
+      <Loading open={isModalOpen || loading} />
       <BeiAnHao />
       {/* </BCVizContext.Provider> */}
     </>);

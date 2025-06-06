@@ -104,9 +104,12 @@ export const withDownloadUrl = (data: fetchDataReturn): fetchDataReturn => {
     }
   });
 };
+const UploadFileStr = 'Upload File';
+const some_error_occur = 'some error occur';
+const Please_input_URL = 'Please input URL';
 export default function FileUploadSimple<T extends JSON_ARR> (props: {
   readonly parseData: parseData<T>;
-  readonly setWillPatchData: SetStateType<WillPatchData<T>>;
+  readonly setWillPatchData: SetStateType<WillPatchData<T>>;  // SetStateType<WillPatchData<T>>
   readonly defaultTxt: defaultTxt;
   readonly title: string;
 }) {
@@ -119,7 +122,6 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
   const setWillPatchDataWithName = useMemoizedFn((data: T, name: string) => {
     setWillPatchData({
       fileName: name.match(/[^\/]+$/)?.[0] ?? name,
-      //@ts-expect-error
       data,
     });
   });
@@ -128,12 +130,14 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
       if (res) {
         const { fileInfo, fileData } = res;
         const parseFileData = parseData(fileData);
+        console.log(JSON.stringify(parseFileData));
         if (parseFileData.length === 0) {
           toast.error('The file format is incorrect!');
           return;
         }
         setFileInfo(fileInfo);
         setWillPatchDataWithName(parseFileData, url);
+        console.log(JSON.stringify(parseFileData));
       }
     }, error).catch(error);
   });
@@ -149,16 +153,16 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
           variant="contained"
           startIcon={<CloudUploadIcon />}
           fullWidth
-          title="Upload File"
+          title={UploadFileStr}
         >
-          Upload File
+          {UploadFileStr}
           <input
             type="file"
             className={style['input-file']}
             onChange={(event) => unstable_batchedUpdates(() => {
               const file = event.target.files?.[0];
               if (!file) {
-                alert('some error occur');
+                alert(some_error_occur);
                 return;
               }
               const fileReader = new FileReader();
@@ -191,7 +195,7 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
                       data: willResolveData,
                     });
                   } catch (e) {
-                    alert('some error occur');
+                    alert(some_error_occur);
                   }
                 }
               };
@@ -211,7 +215,7 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
         >
           <Paper elevation={24} className={style['TextField-Paper'] ?? ''}>
             <TextField
-              label="Please input URL"
+              label={Please_input_URL}
               onChange={e => {
                 setUrl(e.target.value);
               }}
@@ -219,8 +223,8 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
               // autoFocus
               fullWidth
               // focused
-              placeholder="Please input URL"
-              title="Please input URL"
+              placeholder={Please_input_URL}
+              title={Please_input_URL}
               className={style['TextField-Paper-input'] ?? ''}
             />
             <Button

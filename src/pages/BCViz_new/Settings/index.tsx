@@ -31,7 +31,7 @@ const RenderingEngineToJsx = ({ renderingEngine }: {
       return <>Suitable for large data volumes. With many available functions and high performance.</>;
   }
 };
-
+const SelectRenderingEngineStr = 'Select Rendering Engine';
 export default function Settings (props: {
   readonly setSelectEngine: SetStateType<keyofRenderingEngine>;
   readonly selectEngine: keyofRenderingEngine;
@@ -74,13 +74,13 @@ export default function Settings (props: {
         <Paper key='content' elevation={24}
           className={classNames(style['Paper'])}
         ><FormControl fullWidth >
-            <Tooltip arrow title="Select Rendering Engine"
+            <Tooltip arrow title={SelectRenderingEngineStr}
               placement="top"
-            ><InputLabel>Select Rendering Engine</InputLabel></Tooltip>
+            ><InputLabel>{SelectRenderingEngineStr}</InputLabel></Tooltip>
 
             <Select<keyofRenderingEngine>
               fullWidth
-              label="Select Rendering Engine"
+              label={SelectRenderingEngineStr}
               defaultValue={'ECharts Engine' as keyofRenderingEngine}
               onChange={e => {
                 const value = e.target.value as keyofRenderingEngine;

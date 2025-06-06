@@ -1,48 +1,75 @@
-import { Button, Paper } from "@mui/material";
+import { Paper } from "@mui/material";
 import BCViz_newStyle from "../BCViz_new/_index.module.scss";
 import style from "./_index.module.scss";
 import SideCollapse from "../BCViz_new/SideCollapse";
-import CommonCharts, { onEChartsParam, onEChartsParamFunc } from "../BCViz_new/CommonECharts";
-import { useMemoizedFn, useSafeState, useSetState } from "ahooks";
+import CommonCharts, { type onEChartsParam, type onEChartsParamFunc } from "../BCViz_new/CommonECharts";
+import { useCreation, useMemoizedFn, usePrevious, useSafeState, useSetState, useUpdateEffect } from "ahooks";
 import { UVenum, getCommonValueFromTableData, getDataArrWithPos } from "../BCviz/utils";
-import { OriginDataObjReadonlyArr, OriginGraphData, OriginGraphDataReadonlyArr } from "../BCviz/types";
+import type { OriginDataObjReadonlyArr, OriginGraphData, OriginGraphDataReadonlyArr } from "../BCviz/types";
 import InitModal from "./InitModal";
-import { CSSProperties, useMemo } from "react";
-import { flatMapDepth, isEqual, isUndefined, uniqBy, uniqWith, without } from "lodash";
-import { idbCommonArgs, svgWH } from "../BCViz_new/utils";
-import { Link, getGraphOption } from "../BCViz_new/Echarts";
+import { type CSSProperties, useMemo } from "react";
+import { every, flatMapDepth, isUndefined, some } from "lodash";
+import { svgWH } from "../BCViz_new/utils";
+import { type Link, getGraphOption } from "../BCViz_new/Echarts";
 import { uvHighlightColor } from "../BCViz_new";
-import { CallbackDataParams } from "echarts/types/dist/shared";
+import type { CallbackDataParams } from "echarts/types/dist/shared";
 import classNames from 'clsx';
-import { isDEV, isPROD } from "@/utils/isEnv";
-import { initUVcount, testGraphData, testTableData } from "./devTestData";
-import axios from "axios";
-import { waitMiddleEventLoop } from "@/utils";
-import { createOrAddIdb } from "@/utils/idb";
-import { constructBCviz, constructBCviz_old, headFileExist, uploadFile } from "../BCViz_new/api";
+import { isDEV } from "@/utils/isEnv";
+import { initUVcount, testGraphData } from "./devTestData";
 import { useNavigate } from "react-router";
 // import md5 from 'md5';
-import { str } from 'crc-32';
+import SideModifyNodeCount from "./SideModifyNodeCount";
+import ConfirmModal from "./ConfirmModal";
 // import { } from '@types/md5';
 const { freeze, fromEntries } = Object;
 const { from } = Array;
 const { isSafeInteger } = Number;
 const { abs } = Math;
-const { subtle } = crypto;
-const textEncoder = new TextEncoder();
+// const { subtle } = crypto;
+// const textEncoder = new TextEncoder();
+const initFilename = `file-${new Date().toJSON()}`;
 
 export const UVEnumArr = freeze([UVenum.U, UVenum.V]);
 export default function BCviz_Edit () {
-  const useFileName = useSafeState<string | undefined>(`file-${new Date().toJSON()}`);
-  const [fileName, setFileName] = useFileName;
+  const useFileName = useSafeState<string | undefined>(initFilename);
+  const [fileName = initFilename, setFileName] = useFileName;
   const useUVCount = useSetState(initUVcount);
   const [uvCount, setUvCount] = useUVCount;
+  const lastUvCount = usePrevious(uvCount);
+  const [graphData, setGraghData] = useSafeState<OriginGraphDataReadonlyArr>(isDEV ? testGraphData : ([{
+    u: 1,
+    v: 1,
+  }]));
+  // useUpdateEffect(() => {
+
+  //  }, [uvCount]);
 
   const tableData = useMemo(() => {
-    const tableData: OriginDataObjReadonlyArr = flatMapDepth(uvCount, (count, k, obj) =>
+    const tableData: OriginDataObjReadonlyArr = flatMapDepth(uvCount, (count, k) =>
       from(new Array(count)).map((_, ind) => ({ k: (k as UVenum), kInd: ind + 1 })), 1);
     const commonValueFromTableData = getCommonValueFromTableData(tableData, svgWH);
     return getDataArrWithPos(tableData, [], commonValueFromTableData, innerHeight);
+  }, [uvCount]);
+  useUpdateEffect(() => {
+    // 新的数量比原来少
+    if (some(uvCount, (count, uv) => {
+      if (isUndefined(count) || isUndefined(lastUvCount)) {
+        return false;
+      }
+      const lastCount = lastUvCount[uv as UVenum];
+      return !isUndefined(lastCount) && count < lastCount;
+    })) {
+      const newGraphData = graphData.filter(edge => every(edge, (v, k) => {
+        const count = uvCount[k as UVenum];
+        return !isUndefined(count) && v <= count;
+      }));
+      if (graphData.length > newGraphData.length) {
+
+
+        setGraghData(newGraphData);
+      }
+    }
+    // setGraghData(graphData);
   }, [uvCount]);
 
   // const [selectDot, setSelectDot] = useSafeState<Omit<OriginDataObj, 'v'>>();
@@ -74,13 +101,12 @@ export default function BCviz_Edit () {
     // }
     // tableData[findSelectDot]
   }, [selectDot, tableData]);
-  const [graghData, setGraghData] = useSafeState<OriginGraphDataReadonlyArr>(isDEV ? testGraphData : ([{
-    u: 1,
-    v: 1,
-  }]));
+
   const GraphChartsOption = useMemo(() => { // TODO: 可以只变更series，其他在一开始就输入进去
-    return getGraphOption(tableDataInSelect, graghData);
-  }, [tableDataInSelect, graghData]);
+
+
+    return getGraphOption({ dataArrWithPos: tableDataInSelect, graphData, emphasisFocus: 'none' });
+  }, [tableDataInSelect, graphData]);
   // const [tableData, setTableData] = useSafeState<PosDataObjArr>([]);
   const onClickFn: onEChartsParamFunc = useMemoizedFn((eCElementEvent) => {
     const {
@@ -88,38 +114,56 @@ export default function BCviz_Edit () {
       // componentType,
       dataIndex,
       name,
-      // seriesType,
-      value,
-      borderColor,
-      color,
-      data,
       dataType,
     } = eCElementEvent as CallbackDataParams;
 
     if (isSafeInteger(dataIndex) && name && dataType === 'node') {
       if (isUndefined(selectDot)) {
         setSelectDot(dataIndex);
+      } else if (dataIndex === selectDot) { //  两个点相同
+        setSelectDot(undefined);  //  取消高亮
       }
       else {
-        if (dataIndex !== selectDot) {
-          // const dot1 = tableData[dataIndex];
-          // const dot2 = tableData[selectDot];
-          // if (dot1 && dot2) {
-          // setGraghData([...graghData, ({
-          //   [dot1.k]: dot1.kInd,
-          //   [dot2.k]: dot2.kInd,
-          // } as Record<UVenum, number>)]);
-          setGraghData(uniqWith([...graghData, (fromEntries([dataIndex, selectDot].map(ind => {
-            const dot = tableData[ind];
-            if (!dot) {
-              return [];
-            }
-            return [dot.k, dot.kInd];
-          })) as Record<UVenum, number>)], isEqual));
-          // }
-
+        const dot1 = tableData[dataIndex];
+        const dot2 = tableData[selectDot];
+        if (!dot1 || !dot2) {
+          return; //  出错了
         }
-        setSelectDot(undefined);
+        const { k: dot1K } = dot1;
+        const { k: dot2K } = dot2;
+        if (dot1K === dot2K) {  //  两个点在同一侧
+          setSelectDot(dataIndex);  //  换高亮点
+        } else {
+          const dots = [dot1, dot2];
+          const findEdge = graphData.find(edge => {
+            return dots.every(({ k, kInd }) => edge[k] === kInd);
+          });
+          if (findEdge) {
+            // 删除已有边？
+            // setGraghData(without(graphData, findEdge));
+          } else {
+            const entriesArr: ReadonlyArray<[UVenum, number]> = dots.map(({ k, kInd }) => ([k, kInd]));
+            const graghObj = fromEntries(entriesArr) as OriginGraphData;
+
+            setGraghData(graphData.concat(graghObj));
+          }
+          setSelectDot(undefined);
+        }
+        // const findLink=graphData
+        // if (dot1 && dot2) {
+        // setGraghData([...graghData, ({
+        //   [dot1.k]: dot1.kInd,
+        //   [dot2.k]: dot2.kInd,
+        // } as Record<UVenum, number>)]);
+        // setGraghData(uniqWith([...graphData, (fromEntries([dataIndex, selectDot].map(ind => {
+        //   const dot = tableData[ind];
+        //   if (!dot) {
+        //     return [];
+        //   }
+        //   return [dot.k, dot.kInd];
+        // })) as Record<UVenum, number>)], isEqual));
+        // }
+        // setSelectDot(undefined);
       }
     }
   });
@@ -130,10 +174,6 @@ export default function BCviz_Edit () {
       // componentType,
       dataIndex,
       name,
-      // seriesType,
-      value,
-      borderColor,
-      color,
       data,
       dataType,
     } = eCElementEvent as CallbackDataParams;
@@ -149,104 +189,34 @@ export default function BCviz_Edit () {
         }
         return [];
       }));
-      const findOneInd = graghData.findIndex((link) => {
+      const findOneInd = graphData.findIndex((link) => {
         return UVEnumArr.every(uv => link[uv] === willFindLink[uv]);
       });
       if (findOneInd !== -1) {
+
         setGraghData([
-          ...graghData.slice(0, findOneInd),
-          ...graghData.slice(findOneInd + 1),
+          ...graphData.slice(0, findOneInd),
+          ...graphData.slice(findOneInd + 1),
         ]);
       }
     }
   });
   const onDblClick: onEChartsParam = ['dblclick', 'series', onDblClickFn];
-  const navigate = useNavigate();
+  const textBipartiteGraph = useCreation(() => graphData.map(({ u, v }) => `${u} ${v}`).join('\n'), [graphData]);
   return <Paper elevation={24} className={BCViz_newStyle['Main'] ?? ''}>
-    <InitModal {...{ useFileName, useUVCount }} />
-    <SideCollapse>
-
-
+    <InitModal {...{ useFileName, useUVCount, setGraghData }} />
+    <SideCollapse isOpen={false}>
+      <SideModifyNodeCount {...{ useUVCount }} />
     </SideCollapse>
     <Paper elevation={24} className={classNames(BCViz_newStyle['Main-Mid'], style['Mid'])} >
-      <CommonCharts option={GraphChartsOption} onParams={[onDblClick, onClick]} style={{ '--minHeight': '90vh' } as CSSProperties} />
-      <Button fullWidth variant="contained" size="large"
-        onClick={async () => {
-          try {// if (confirm('Create BCviz file?')) {
-            const text = graghData.map(({ u, v }) => `${u} ${v}`).join('\n');
-            // const hash = await subtle.digest("SHA-1", textEncoder.encode(text)).then(arrayBuffer => {
-            //   const hash = from(new Uint32Array(arrayBuffer
-            //     // .slice(8)
-            //   )).map(i => i.toString(36)).join('');
-            //   return hash;
-            //   // console.log(hash);
-            // });
-            const hash: string = abs(str(text)).toString(36);
-            const fileNameFEWithExt = `${fileName}.txt`;  // 前端展示文件名
-            const fileNameBEWithExt = `${hash}.txt`;  // 后端文件名
-            const fileNameBEWithExt_cohesion = `${hash}_cohesion.txt`;
-            const datasetsFileFolder = 'datasets/';
-            // const fileNameBEWithExt = fileNameBEWithExt;//`${datasetsFileFolder}${fileNameBEWithExt}`;
-            const fetchSeeIsExit = await Promise.all([fileNameBEWithExt, fileNameBEWithExt_cohesion].map(headFileExist)).then((res) => res.every(Boolean), () => false);
-            console.log(fetchSeeIsExit);
-
-            if (!fetchSeeIsExit) {
-              await uploadFile(text, fileNameBEWithExt);
-              await waitMiddleEventLoop();
-              await constructBCviz(fileNameBEWithExt);
-              // await constructBCviz_old(text, fileNameBEWithExt);
-              await waitMiddleEventLoop();
-              // await uploadFile(text, fileNameBEWithExt);
-            }
-            // if (isPROD) {
-            const searchParams = new URLSearchParams({
-              dataset: fileNameBEWithExt,
-              BCviz_file: fileNameBEWithExt_cohesion,
-            });
-            navigate({
-              pathname: '/',
-              search: `?${searchParams.toString()}`
-            });
-
-            // 构建符合 HashRouter 结构的 URL
-            // const targetUrl = `${window.location.origin}/#/?${searchParams.toString()}`;
-
-            // // 在新标签页打开
-            // window.open(targetUrl, '_blank');
-
-            // }
-            // const url = new URL('/', location.origin);
-            // url.searchParams.set('dataset', fileNameBEWithExt);
-            // url.searchParams.set('BCviz_file', `${hash}_cohesion.txt`);
-            // open(url, '_blank');
-            // if (isPROD) {
-            const willResolveData = {
-              fileInfo: {
-                lastModified: Date.now(),
-                name: fileNameBEWithExt,
-                size: text.length,
-                // type: headers.get('content-type') ?? '',
-                // downloadUrl,
-              },
-              fileData: text,
-            };
-            createOrAddIdb({
-              ...idbCommonArgs, data: willResolveData, IDBValidKey: fileNameBEWithExt
-            });
-            // }
-            // localStorage.setItem(fileNameFEWithExt, fileBEPath);
-            // localStorage.setItem(`${fileName}_cohesion.txt`, fileBEPath);
-            // await waitMiddleEventLoop();
-
-            // }}
-
-          } catch (e) {
-            // alert('something error');
-            console.error(e);
-          }
-
-        }}
-      >Confirm</Button>
+      <CommonCharts
+        option={GraphChartsOption}
+        onParams={[onDblClick, onClick]}
+        style={{ '--minHeight': '90vh' } as CSSProperties}
+        isPermitShowLoading={false} />
+      <ConfirmModal text={textBipartiteGraph}
+        fileName={fileName}
+      />
     </Paper>
   </Paper>;
 }
@@ -254,10 +224,6 @@ export default function BCviz_Edit () {
 /*
 1. 历史记录管理（indexedb+searchparam）
 2. 使用帮助提示
-3. 动态增减点（每次减后graphdata都要去掉边）
-4. loading动画
 5. 一条边都没有时，按钮变灰
-6. 即将上传的文本预览，便于修改
-7. focus: 'adjacency', 不强调某点
 
 */

@@ -1,3 +1,10 @@
+#!/bin/bash
+read -p "input BCviz repo download zip url: " url
+if [ -z "$url" ]; then
+    echo "error! URL is not valid!"
+    exit 1
+fi
+
 # 安装需要的软件
 # 更新软件包列表
 # --fix-missing: 尝试修复缺失的依赖关系
@@ -54,7 +61,7 @@ sudo chmod --recursive 777 ./script.mjs
 # --test_end--
 
 # 下载并解压仓库
-sudo wget "https://anonymous.4open.science/api/repo/BCviz-API-CE4D/zip"
+sudo wget "$url"
 sudo unzip zip
 # 创建软链接，当前目录为v1。因为进入bcviz_demo目录，以bcviz_demo的视角来看，v1是bcviz_demo的上级目录，所以用../v1/datasets
 sudo ln -s ../v1/datasets ../bcviz_demo/datasets

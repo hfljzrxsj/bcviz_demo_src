@@ -1,5 +1,5 @@
 import {
-  Paper, PaperProps,
+  Paper, type PaperProps,
   // Button, Dialog, Divider, Select, FormControl, InputLabel, MenuItem, Tooltip, Fab, IconButton
 } from '@mui/material';
 import { memo, useEffect, useMemo, useRef, useImperativeHandle } from 'react';
@@ -113,9 +113,10 @@ export type onEChartsParamFunc = onEChartsParam[2];
 export default memo((props: {
   readonly option: EChartsOption;
   readonly onParams?: ReadonlyArray<onEChartsParam>;
+  readonly isPermitShowLoading?: boolean;
   // readonly clickToSetSize: ReturnType<typeof clickToSetSize>;
 } & PaperProps) => {
-  const { option, onParams = [], ...others } = props;
+  const { option, onParams = [], isPermitShowLoading = true, ...others } = props;
   // const update = useUpdate();
   const ref = useRef<HTMLDivElement>(null);
   // const { current } = ref;
@@ -172,7 +173,9 @@ export default memo((props: {
       return;
     }
     const chart = getInstanceByDom(current) ?? init(current);
-    chart.showLoading();
+    if (isPermitShowLoading) {
+      chart.showLoading();
+    }
     waitLastEventLoop(() => {
       chart.setOption(option, true, true);
       onParams.map(param => chart.on(...param));
@@ -185,7 +188,9 @@ export default memo((props: {
       // chart.on('dbclick', (eCElementEvent) => {
       //   console.log(eCElementEvent);
       // });
-      chart.hideLoading();
+      if (isPermitShowLoading) {
+        chart.hideLoading();
+      }
     });
     const closureResize = debounce(chart.resize);
     const doResize = () => closureResize();

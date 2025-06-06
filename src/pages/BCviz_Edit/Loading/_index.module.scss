@@ -1,0 +1,13 @@
+.Modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+
+  // min-width: 99vw;
+  .CircularProgress {
+    width: 99vmin !important;
+    height: 99vmin !important;
+  }
+}

@@ -4,15 +4,14 @@ import { UVenum } from "../BCviz/utils";
 import { parseStringToObjArray } from "./parsePQB";
 import type { InputSTSetState } from "./InputST";
 import { waitOnLoadEventLoop } from "@/utils";
-import { isDEV } from "@/utils/isEnv";
 import { parseGraphDataSuper, parseTableData } from "../BCviz/FileUpload";
-import { pickBy, negate, isUndefined, omitBy } from "lodash";
+import { isUndefined, omitBy } from "lodash";
 import type { OriginDataObjReadonlyArr, OriginGraphDataSuperReadonlyArr } from "../BCviz/types";
 import { createOrAddIdb } from "@/utils/idb";
-import { fetchDataReturn, withDownloadUrl, getDownloadUrl, idbCommonArgs } from "../BCviz/FileUploadSimple";
+import { type fetchDataReturn, withDownloadUrl, getDownloadUrl, idbCommonArgs } from "../BCviz/FileUploadSimple";
 const { error } = console;
 const { isSafeInteger } = Number;
-const { } = Object;
+const { freeze } = Object;
 export const baseURL = localStorage.getItem('baseURL') ?? 'http://117.72.219.9';
 export const isLocalhost = () => {
   const { origin, protocol, port, hostname, } = location;
@@ -114,7 +113,7 @@ export type Datas = Partial<Record<Modes, getFromSTReturnWithParams>>;
 //   [Modes['Maximum Biclique']]: execTextFromMaximumBiclique(input),
 // });
 const execTextFromApi = (input: string): Partial<Record<Modes, getFromSTReturn>> => ({
-  [Modes['Maximum Biclique']]: {
+  [Modes['Maximum Edge Biclique']]: {
     dataArr: [execTextFromMaximumBiclique(input)]
   },
   [Modes['Maximal Biclique Enumeration']]: parseStringToObjArray(input),
@@ -289,13 +288,12 @@ export const uploadBCviz = (data: string, dataset: string) => {
     }
   });
 };
-export const constructBCviz = (dataset: string) => {
+// {
+//   readonly dataset: string;
+// }
+export const constructBCviz = (params: Record<string, string | number>) => {
   return axios.get(getApiVersionPrefix('construct'), {
-    params: {
-      dataset,
-      s_min: 1,
-      t_min: 1
-    }
+    params,
   });
 };
 export const constructBCviz_old = (data: string, dataset: string) => {
@@ -307,7 +305,7 @@ export const constructBCviz_old = (data: string, dataset: string) => {
     }
   });
 };
-export const getFile = (url: string) => getFileIdb<fetchDataReturn>(url).then(withDownloadUrl).catch(() => axios.get(url, {
+export const getFile = (url: string) => getFileIdb<fetchDataReturn>(url).then(withDownloadUrl).catch(() => axios.get<string>(url, {
   responseType: 'text'
 }).then(async (res) => {
   const headers = new Headers(res.headers as Record<string, string>);
@@ -316,7 +314,7 @@ export const getFile = (url: string) => getFileIdb<fetchDataReturn>(url).then(wi
   // if (typeof data === 'string') {
   // try {
   const downloadUrl = getDownloadUrl(new Blob([data]));
-  const willResolveData = {
+  const willResolveData: fetchDataReturn = freeze({
     fileInfo: {
       lastModified: Date.parse(headers.get('last-modified') ?? ''),
       name: url,
@@ -325,7 +323,7 @@ export const getFile = (url: string) => getFileIdb<fetchDataReturn>(url).then(wi
       downloadUrl,
     },
     fileData: data,
-  };
+  });
   createOrAddIdb({
     ...idbCommonArgs,
     IDBValidKey: url,

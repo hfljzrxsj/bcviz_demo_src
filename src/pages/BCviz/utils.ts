@@ -14,6 +14,8 @@ import { debounce as debounce_lodash } from 'lodash';
 import { Modes } from '../BCViz_new/utils';
 import { clickMultiDotColor, uvHighlightColor } from '../BCViz_new';
 const { values, freeze, keys } = Object;
+// const { max, min } = Math;
+const { isNaN } = Number;
 
 // export const getTitle = (split: Parameters<Array<string>['join']>[0]) => ({ k, kInd, v, neighbor }: PosDataObj) => [`vertex name: ${k + kInd}`,
 // `maximum cohesion: ${v}`,
@@ -37,7 +39,10 @@ export const getCommonValueFromTableData = (tableData: OriginDataObjReadonlyArr 
   readonly svgWidth: number,
   readonly svgHeight: number,
 }) => {
-  const valuesArr = tableData?.map(({ v }) => v) ?? [];
+  if (!tableData) {
+    return;
+  }
+  const valuesArr = tableData.map(({ v }) => v).map(Number).filter(negate(isNaN));
   const min = Math.min(...valuesArr);
   const max = Math.max(...valuesArr);
   const diff = max === min ? 1 : max - min;
@@ -50,6 +55,20 @@ export const getCommonValueFromTableData = (tableData: OriginDataObjReadonlyArr 
   const getYPos = (v: number) => marginSize + (max - v) * yRadix;
   return { valuesArr, min, max, diff, realHeight, xRadix, yRadix, length, getYPos, svgWidth, svgHeight };
 };
+
+// : {
+// readonly valuesArr?: ReadonlyArray<number>,
+// readonly min?: number,
+// readonly max?: number,
+// readonly diff?: number,
+// readonly realHeight?: number,
+// readonly xRadix?: number,
+// readonly yRadix?: number,
+// readonly length?: number,
+// readonly getYPos?: (v: number) => number,
+// readonly svgWidth?: number,
+// readonly svgHeight?: number,
+// }
 
 export const uvIndObj = freeze({
   [UVenum.U]: 0,
@@ -80,13 +99,13 @@ export const getGraphNeighbor = (graphData: OriginGraphDataReadonlyArr) => {
   }
   return graphNeighbor;
 };
-export const getDataArrWithPos = (tableData: getCommonValueFromTableDataParamers[0], graphData: OriginGraphDataReadonlyArr | undefined, { xRadix, getYPos, svgWidth, max, min }: getCommonValueFromTableDataReturnType,
+export const getDataArrWithPos = (tableData: getCommonValueFromTableDataParamers[0], graphData: OriginGraphDataReadonlyArr | undefined, commonValueFromTableDataReturnType: getCommonValueFromTableDataReturnType,
   graphSvgHeght: number,
 ) => {
-  if (!graphData || !tableData) {
+  if (!graphData || !tableData || !commonValueFromTableDataReturnType) {
     return [];
   }
-
+  const { xRadix, getYPos, svgWidth, max, min } = commonValueFromTableDataReturnType;
   // let start = performance.now();
   // const graphNeighbor_ = graphData.reduce((pre, cur) => {
   //   return reduce(cur, (preInner, curInner, key, cur) => {
@@ -161,7 +180,7 @@ export const getDataArrWithPos = (tableData: getCommonValueFromTableDataParamers
       ...oneData,
       i,
       x: marginSize + i * xRadix,  //x
-      y: getYPos(v),  //y
+      ...(isUndefined(v) ? undefined : { y: getYPos(v) }),  //y
       // graphX: marginSize + (kInd - 1) * graphGroupDiffX[k],
       graphX: marginSize + (tableDataGroupToIndex[k].get(kInd) ?? 0) * graphGroupDiffX[k],
       graphY: marginSize + uvIndObj[k] * graphGroupDiffY,
@@ -313,9 +332,7 @@ const colorLength = colors_.length;
 export const doubleClickCircleFn = ({
   isEditX,
   dataArrWithPos: drawDotData,
-  commonValueFromTableData: {
-    length
-  },
+  commonValueFromTableData,
   // dotData,
   size,
   // setSize,
@@ -324,14 +341,13 @@ export const doubleClickCircleFn = ({
   // readonly dotData?: PosDataObj;
   // }
 ): PosDataObjArr => {
-
   // if (dotData) {
   // toast(getTooltipTitle(dotData));
   // }
   // if (isNil(v)) {
   //   return drawDotData;
   // }
-  if (!isEditX) {
+  if (!isEditX || !commonValueFromTableData) {
     // clickLineVal = initClickLineVal;
     // setSize?.(initClickLineVal);
     // return (drawDotData.map(i => {
@@ -343,6 +359,8 @@ export const doubleClickCircleFn = ({
     // }));
     return drawDotData;
   }
+  const { length } = commonValueFromTableData;
+
   const isCancel = isNil(size);
   if (isCancel) {
     // clickLineVal = initClickLineVal;
@@ -351,7 +369,7 @@ export const doubleClickCircleFn = ({
       return {
         ...i,
         color: '',
-        isHighlight: isCancel ? false : (i.v >= size),
+        // isHighlight: isCancel ? false : (i.v >= size),
       };
     }));
   }
@@ -376,7 +394,7 @@ export const doubleClickCircleFn = ({
         break;
       }
       const curVal = getNumFromData(curData);
-      if (curVal >= size || curVal >= startVal) {
+      if (!isUndefined(curVal) && !isUndefined(startVal) && (curVal >= size || curVal >= startVal)) {
         drawDotDataGroupByV.push(curData);
         startData = curData;
         startVal = curVal;
@@ -397,7 +415,8 @@ export const doubleClickCircleFn = ({
   }
 
   return (willSetDrawDotData.map(i => {
-    return (i.v >= size) ? {
+    const { v } = i;
+    return (!isUndefined(v) && v >= size) ? {
       ...i,
       isHighlight: true,
     } : i;
@@ -419,11 +438,11 @@ export const doubleClickCircleFnForECharts = (props: ClickCircleProps
     dataArrWithPos: drawDotData,
     commonValueFromTableData: {
       length
-    },
+    } = {},
     size,
     colors = colors_,
   } = props;
-  if (!isEditX) {
+  if (!isEditX || !length) {
     return { datas: drawDotData, sections: [] };
   }
   const isCancel = isNil(size);
@@ -449,7 +468,7 @@ export const doubleClickCircleFnForECharts = (props: ClickCircleProps
       drawDotDataSection.push(i);
     };
     const doubleClickCircleFnForEChartsSubFunc = () => {
-      if (curVal >= size) {
+      if (!isUndefined(curVal) && curVal >= size) {
         datasPushFunc();
         const color = colors[colorInd % colorLength] ?? '';
         drawDotDataSections.push(drawDotDataGroupByV);
@@ -477,7 +496,7 @@ export const doubleClickCircleFnForECharts = (props: ClickCircleProps
       break;
     }
     const nextVal = getNumFromData(nextData);
-    if (nextVal >= size) { //u1,v3
+    if (!isUndefined(nextVal) && nextVal >= size) { //u1,v3
       datasPushFunc();
     } else {  //v1
       doubleClickCircleFnForEChartsSubFunc();

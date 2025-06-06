@@ -865,14 +865,15 @@ export default defineConfig(({ mode, command }) => {
         // external: swSrc,
         'input': {
           'main': resolve(__dirname, 'src/index.html'),
-          [sw]: swSrc,
+          // [sw]: swSrc,
         },
         ...(isSplitModule ? {
           'output': {
             'chunkFileNames': 'js/[name]-[hash].js',
             'entryFileNames': (chunkInfo) => {
-              if (chunkInfo.facadeModuleId === swSrc.replace(/\\/g, '/'))
-                return `${sw}.js`;
+              // if (chunkInfo.facadeModuleId === swSrc.replace(/\\/g, '/')) {
+              //   return `${sw}.js`;
+              // }
               return 'js/[name]-[hash].js';
             },
             'assetFileNames': '[ext]/[name]-[hash].[ext]',

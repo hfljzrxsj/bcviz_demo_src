@@ -14,7 +14,9 @@ import style from './_index.module.scss';
 import { isUndefined } from "lodash";
 import { unstable_batchedUpdates } from "react-dom";
 import { waitLastEventLoop } from "@/utils";
+import { TextFieldProps_Number as textFieldProps_Number } from "../const";
 const { isSafeInteger } = Number;
+const inputSizeLabel = 'Input Size';
 export default function InputSize (props: {
   readonly value: SizeProps['size'];
   readonly setSize: SetSizeProps['setSize'];
@@ -38,16 +40,14 @@ export default function InputSize (props: {
       <FormControl fullWidth>
         <TextField
           fullWidth
-          placeholder='Input Size'
-          label='Input Size'
+          placeholder={inputSizeLabel}
+          label={inputSizeLabel}
           type="search"
-          title='Input Size'
+          title={inputSizeLabel}
           value={size}
           inputProps={{
-            min: 0,
+            ...textFieldProps_Number.inputProps,
             max,
-            inputMode: 'numeric',
-            pattern: '^(0|[1-9]\d*)$',
           }}
           spellCheck
           autoCapitalize='on'

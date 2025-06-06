@@ -32,10 +32,11 @@ export default function SideCollapse (props:
   // { children: null; } &
   {
     readonly buttonOrder?: number;
+    readonly isOpen?: boolean;
   }
 ) {
-  const { buttonOrder = 0, children, ...others } = props;
-  const [isOpen, { toggle }] = useBoolean(true);
+  const { buttonOrder = 0, isOpen: isOpenFromProps = true, children, ...others } = props;
+  const [isOpen, { toggle }] = useBoolean(isOpenFromProps);
   if (!children) {
     return null;
   }

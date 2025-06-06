@@ -16,6 +16,7 @@ import { dirname, join, parse } from 'node:path';
 const { log, error } = console;
 // const defaultTxt = ['example.txt', 'writer.txt', 'marvel.txt', 'paper.txt', 'example_cohesion.txt', 'writer_cohesion.txt', 'marvel_cohesion.txt', 'paper_cohesion.txt'];
 const initVertexs = ['0'];
+const initST_min = '1';
 /**
  * @param {string} vertexsStr 
  * @returns {ReadonlyArray<string>}
@@ -104,14 +105,15 @@ function validateFilename (filename) {
   // }
   return true;
 }
+//  * @param {string} bcviz_demo_datasets /etc/nginx/sites-available/bcviz_demo/datasets
+
 /**
  * @param {string} dataset 
  * @param {string} unzipDir_datasets /etc/nginx/sites-available/v1/datasets
- * @param {string} bcviz_demo_datasets /etc/nginx/sites-available/bcviz_demo/datasets
  * @param {string} bcviz_demo /etc/nginx/sites-available/bcviz_demo
  * 
  */
-const writeFileAndSymlink = (dataset, unzipDir_datasets, bcviz_demo_datasets, bcviz_demo) =>/** @type {Promise<void>} */ (new Promise((resolve) => {
+const writeFileAndSymlink = (dataset, unzipDir_datasets, bcviz_demo) =>/** @type {Promise<void>} */ (new Promise((resolve) => {
   const writeFilePath = join(bcviz_demo, dataset);
   if (!existsSync(writeFilePath)) {
     const text = readFileSync(stdin.fd, 'utf8');
@@ -121,10 +123,10 @@ const writeFileAndSymlink = (dataset, unzipDir_datasets, bcviz_demo_datasets, bc
   if (!existsSync(unzipDir_datasets_file)) {
     symlinkSync(writeFilePath, unzipDir_datasets_file);
   }
-  const bcviz_demo_datasets_file = join(bcviz_demo_datasets, dataset);
-  if (!existsSync(bcviz_demo_datasets_file)) {
-    symlinkSync(writeFilePath, bcviz_demo_datasets_file);
-  }
+  // const bcviz_demo_datasets_file = join(bcviz_demo_datasets, dataset);
+  // if (!existsSync(bcviz_demo_datasets_file)) {
+  //   symlinkSync(writeFilePath, bcviz_demo_datasets_file);
+  // }
   resolve();
 }));
 // const exactPathname = (pathname) => {
@@ -133,7 +135,7 @@ const writeFileAndSymlink = (dataset, unzipDir_datasets, bcviz_demo_datasets, bc
 // };
 
 // --test--
-console.log("Status: 403 Forbidden");
+// console.log("Status: 403 Forbidden");
 // console.log("Status: 404 Not Found");
 // console.log("Status: 500 Internal Error");
 // --test--
@@ -161,7 +163,7 @@ log();
     /** /etc/nginx/sites-available/v1/datasets */
     const unzipDir_datasets = join(unzipDir, datasets);
     /** /etc/nginx/sites-available/bcviz_demo/datasets */
-    const bcviz_demo_datasets = join(bcviz_demo, datasets);
+    // const bcviz_demo_datasets = join(bcviz_demo, datasets);
 
 
     switch (exactPathname(DOCUMENT_URI)) {
@@ -216,7 +218,7 @@ log();
         if (!validateFilename(dataset)) {
           return;
         }
-        await writeFileAndSymlink(dataset, unzipDir_datasets, bcviz_demo_datasets, bcviz_demo);
+        await writeFileAndSymlink(dataset, unzipDir_datasets, bcviz_demo);
         break;
       }
       case 'construct': {
@@ -224,15 +226,17 @@ log();
           return;
         }
         // start to construct
-        const s_min = searchParam.get('s_min');
-        const t_min = searchParam.get('t_min');
+        const s_min = searchParam.get('s_min') || initST_min;
+        const t_min = searchParam.get('t_min') || initST_min;
         const { name, ext } = parse(dataset);
-        const cohesionFileName = `${name}_cohesion${ext}`;
+        const cohesionFileName = `${name}_cohesion${(s_min === initST_min && t_min === initST_min)
+          ? ''
+          : [s_min, t_min].map(s => `_${s}`).join('')}${ext}`;
         const cohesionFilePath = join(unzipDir, 'Index-results', cohesionFileName);
         if (existsSync(cohesionFilePath)) {
           return;
         }
-        execFile("./BCviz", [dataset, s_min || '1', t_min || '1'], {
+        execFile("./BCviz", [dataset, s_min, t_min], {
           cwd: "./construct-BCviz", // 设置工作目录为 search-BCviz 文件夹
           // timeout: 0,
         }, (err, stdout, stderr) => {
@@ -250,10 +254,10 @@ log();
             if (!existsSync(bcviz_file)) {
               symlinkSync(cohesionFilePath, bcviz_file);
             }
-            const bcviz_demo_datasets_file = join(bcviz_demo_datasets, cohesionFileName);
-            if (!existsSync(bcviz_demo_datasets_file)) {
-              symlinkSync(cohesionFilePath, bcviz_demo_datasets_file);
-            }
+            // const bcviz_demo_datasets_file = join(bcviz_demo_datasets, cohesionFileName);
+            // if (!existsSync(bcviz_demo_datasets_file)) {
+            //   symlinkSync(cohesionFilePath, bcviz_demo_datasets_file);
+            // }
           }
           const arr = stdout.trim().split('\n');
           log([arr.slice(0, 4), '...', arr.slice(-3)].join('\n'));

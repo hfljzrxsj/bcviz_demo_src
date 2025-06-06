@@ -173,7 +173,9 @@
     "moduleDetection": "force",
     // "reactNamespace": "React",
     "generateCpuProfile": "profile.cpuprofile",
-    "pretty": true
+    "pretty": true,
+    "verbatimModuleSyntax": true,
+    "preserveValueImports": false,
   },
   // "files": [
   // ],

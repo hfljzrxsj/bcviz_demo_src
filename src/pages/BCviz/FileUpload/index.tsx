@@ -2,14 +2,13 @@ import { UV, UVenum } from "../utils";
 import { Button, Dialog, Divider, Link as Link_MUI, Paper, Tooltip } from "@mui/material";
 import { useMount, useBoolean, useUpdateEffect, useMemoizedFn, useDynamicList } from "ahooks";
 import style from './_index.module.scss';
-import { type SetStateType } from "../types";
 import { type SetState } from 'ahooks/lib/createUseStorageState';
 // import clsx from 'clsx';
-import FileUploadSimple, { fetchDataReturn } from "../FileUploadSimple";
+import FileUploadSimple, { type fetchDataReturn } from "../FileUploadSimple";
 import { getFile, headFileExist, uploadFile } from "@/pages/BCViz_new/api";
 import classNames from "clsx";
 import { unstable_batchedUpdates } from "react-dom";
-import type { OriginDataObj, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr, OriginGraphDataArr, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr } from "../types";
+import type { OriginDataObj, OriginDataObjReadonlyArr, OriginGraphDataReadonlyArr, OriginGraphDataArr, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr, SetStateType } from "../types";
 import { Link, useSearchParams } from "react-router-dom";
 import { useMemo } from "react";
 import { uniq } from "lodash";
@@ -17,18 +16,15 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 
 // import type { NullValue } from "vite/node_modules/rollup";
 // import type { NullValue } from "rollup";
-import { ToastContainer } from "react-toastify";
 import { TabKey, TabKey2Title, getFileIdb } from "@/pages/BCViz_new/utils";
 import { Path } from "@/Route";
-import { getIdb } from "@/utils/idb";
-import axios from "axios";
 const { error } = console;
 // import {
 //   usePopupState,
 //   bindTrigger,
 //   bindDialog
 // } from 'material-ui-popup-state/hooks';
-const { from, isArray } = Array;
+const { from } = Array;
 const { freeze } = Object;
 const { isSafeInteger } = Number;
 
@@ -109,9 +105,9 @@ type JSON_OBJ = Record<string, number | string>;
 export type JSON_ARR = ReadonlyArray<JSON_OBJ>;
 export interface WillPatchData<T = JSON_ARR> {
   readonly fileName: string;
-  readonly data: ReadonlyArray<T>;
+  // readonly data: ReadonlyArray<T>;
+  readonly data: T;
 }
-type WillPatchDataArr<T = JSON_ARR> = ReadonlyArray<WillPatchData<T>>;
 export interface FileUploadProps {
   // readonly setTableData: SetStateType<OriginDataObjArr | undefined>;
   // readonly setGraphData: SetStateType<OriginGraphDataArr | undefined>;
@@ -120,7 +116,8 @@ export interface FileUploadProps {
 }
 type FileNameKeys = ['dataset', 'BCviz_file'];
 const fileNameKeys: FileNameKeys = (['dataset', 'BCviz_file',]);
-const fileUploadSimpleProps = freeze([
+//@ts-expect-error
+export const fileUploadSimpleProps: ReadonlyArray<Pick<Parameters<typeof FileUploadSimple>[0], 'title' | 'parseData' | 'defaultTxt'>> = freeze([
   {
     title: TabKey2Title[TabKey.graph],
     parseData: parseGraphData,
@@ -136,7 +133,7 @@ const throwError = (str = 'searchParams is not enough') => {
   error(str);
   throw new Error(str);
 };
-
+const New_Graph = "New Graph";
 export default function FileUpload (props: FileUploadProps) {
   const {
     // setTableData, setGraphData,
@@ -209,7 +206,6 @@ export default function FileUpload (props: FileUploadProps) {
         if (!setFileName || !setData) {
           return throwError();
         }
-        //@ts-expect-error
         setData(parseData);
         setFileName(fileName);
       });
@@ -264,11 +260,11 @@ export default function FileUpload (props: FileUploadProps) {
       >
         { //Open New Bipartite Graph
         }
-        New Graph
+        {New_Graph}
       </Button>
       <Dialog
         // open={isOpen}
-        onClose={(e) => {
+        onClose={() => {
           if (isCanUseSearchParams) {
             setFalse();
           }
@@ -282,7 +278,7 @@ export default function FileUpload (props: FileUploadProps) {
       // {...bindDialog(popupState)}
       >
         <Paper key='title' elevation={24} className={style['title'] ?? ''}>
-          <h3>New Graph</h3>
+          <h3>{New_Graph}</h3>
         </Paper>
         <Paper elevation={24}>
           <Paper key='upload' elevation={24}
@@ -353,7 +349,6 @@ export default function FileUpload (props: FileUploadProps) {
                 });
 
                 willPatchData.forEach(({ fileName, data }, ind) => {
-                  //@ts-expect-error
                   setDatas[ind]?.(data);
                   setFileNames[ind]?.(fileName);
                 });
@@ -412,7 +407,7 @@ export default function FileUpload (props: FileUploadProps) {
 
 /* 马上要做的：
 1. 如果是超图，Tab标题、ECharts左上角title应该标注超图
-2. 自定义绘制图：历史记录、动态增减点、构建时s_min和t_min可以自定义（confirm时确认）、ECharts体验优化（连线优化、hover点强调、去掉loading）、帮助提示（返回上一页）
+2. 自定义绘制图：历史记录、帮助提示（返回上一页）
 3. 上传文件时，如果不是示例文件，且后端无hash，先上传后端
 
   */

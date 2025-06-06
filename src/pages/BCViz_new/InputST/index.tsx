@@ -6,6 +6,8 @@ import { useMemoizedFn } from 'ahooks';
 
 import type { UseSetInputST } from '../TabPanelInput/TabPanelInput';
 import { allEqual } from '../hooks/useGestureFullScreen.mjs';
+import { TextFieldProps_Number } from '../const';
+import { omit } from 'lodash';
 const { isSafeInteger } = Number;
 export interface InputSTSetState {
   readonly s: string;
@@ -50,11 +52,8 @@ export default function InputST ({
           setInputSTCompose(numParseInt.toString());
         }
       }}
-      inputProps={{
-        min: 0,
-        inputMode: 'numeric',
-        pattern: '^(0|[1-9]\d*)$'
-      }}
+      {...TextFieldProps_Number}
+      inputProps={omit(TextFieldProps_Number.inputProps, 'max')}
       // defaultChecked
       // suppressContentEditableWarning
       // suppressHydrationWarning
