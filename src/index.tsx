@@ -1,7 +1,6 @@
 // import { StrictMode } from 'react';
 import './index.scss';
 // import { render } from 'react-dom';
-import App from './App';
 // import { useWorker } from "@koale/useworker";
 // console.log(useWorker.toString());
 
@@ -10,8 +9,7 @@ import App from './App';
 // import './mock';
 // import 'virtual:svg-cions-register';
 import { createRoot } from 'react-dom/client';
-// import U200b from './pages/Test/U200b';
-// import IdbTestPages from './pages/Test/IdbTestPages';
+import App from './App';
 // import reportWebVitals from './reportWebVitals';
 const container = document.body;
 // const container = document.createElement('div');

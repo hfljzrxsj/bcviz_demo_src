@@ -47,6 +47,7 @@ import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import VisualMapSectionAutoComplete from "./VisualMapSectionAutoComplete";
 import BeiAnHao from "./BeiAnHao";
 import Loading from "../BCviz_Edit/Loading";
+import { fileNameKeys } from "../BCviz/FileUpload";
 export const uvHighlightColor = 'tan';
 export const clickMultiDotColor = 'red';
 const { isSafeInteger } = Number;
@@ -200,10 +201,10 @@ export default function BCViz_new () {
 
   }, [originTableData]);
   const { svgWidth = 0, svgHeight = 0 } = svgSize;
-  const [dataset = '', setdataset] = useLocalStorageState<string>('dataset', {
+  const [dataset = '', setdataset] = useLocalStorageState<string>(fileNameKeys[0], {
     defaultValue: ''
   });//useSafeState<string>('');
-  const [BCviz_file = '', setBCviz_file] = useLocalStorageState<string>('BCviz_file', {
+  const [BCviz_file = '', setBCviz_file] = useLocalStorageState<string>(fileNameKeys[1], {
     defaultValue: ''
   });
   const fileNames = { dataset, BCviz_file };

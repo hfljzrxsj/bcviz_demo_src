@@ -1,5 +1,5 @@
 import { Button, Dialog, Paper, TextField } from "@mui/material";
-import { useBoolean, useMemoizedFn, useRequest, useSetState } from "ahooks";
+import { useBoolean, useMemoizedFn, useRequest, useSafeState, useSetState } from "ahooks";
 import style from './_index.module.scss';
 import { headFileExist, uploadFile, constructBCviz, getFile } from "@/pages/BCViz_new/api";
 import { idbCommonArgs } from "@/pages/BCviz/FileUploadSimple";
@@ -8,14 +8,31 @@ import { createOrAddIdb } from "@/utils/idb";
 import { str } from "crc-32";
 import { useNavigate } from "react-router";
 import { every, isUndefined, map, some } from "lodash";
-import { setStateOnChange } from "../utils";
+import { setSearchParamForDataset, setStateOnChange } from "../utils";
 import { TextFieldProps_Number } from "@/pages/BCViz_new/const";
 import { commonUseRequestParams } from "@/utils/const";
 import Loading from "../Loading";
 import { toast } from "react-toastify";
+import { useSearchParams } from "react-router-dom";
+import { unstable_batchedUpdates } from "react-dom";
 const { abs } = Math;
 
-
+const getFileNameBEWithExt = (hash: string) => `${hash}.txt`;
+const getWillResolveData = ({ fileNameBEWithExt, text }: {
+  readonly fileNameBEWithExt: string;
+  readonly text: string;
+}) => {
+  return {
+    fileInfo: {
+      lastModified: Date.now(),
+      name: fileNameBEWithExt,
+      size: text.length,
+      // type: headers.get('content-type') ?? '',
+      // downloadUrl,
+    },
+    fileData: text,
+  };
+};
 export default function ConfirmModal (props: {
   readonly text: string;
   readonly fileName: string;
@@ -27,11 +44,13 @@ export default function ConfirmModal (props: {
     s_min: 1,
     t_min: 1
   });
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [hash, setHash] = useSafeState('');
   const confirmFn = useMemoizedFn(async () => {
     try {
-      const hash: string = abs(str(text)).toString(36);
+
       const fileNameFEWithExt = `${fileName}.txt`;  // 前端展示文件名
-      const fileNameBEWithExt = `${hash}.txt`;  // 后端文件名
+      const fileNameBEWithExt = getFileNameBEWithExt(hash);  // 后端文件名
       const fileNameBEWithExt_cohesion = `${hash}_cohesion${every(st_min, min => min === 1) ?
         '' : [st_min.s_min, st_min.t_min].map(s => `_${s}`).join('')
         }.txt`;
@@ -88,16 +107,7 @@ export default function ConfirmModal (props: {
       // url.searchParams.set('BCviz_file', `${hash}_cohesion.txt`);
       // open(url, '_blank');
       // if (isPROD) {
-      const willResolveData = {
-        fileInfo: {
-          lastModified: Date.now(),
-          name: fileNameBEWithExt,
-          size: text.length,
-          // type: headers.get('content-type') ?? '',
-          // downloadUrl,
-        },
-        fileData: text,
-      };
+      const willResolveData = getWillResolveData({ fileNameBEWithExt, text });
       createOrAddIdb({
         ...idbCommonArgs, data: willResolveData, IDBValidKey: fileNameBEWithExt
       });
@@ -168,9 +178,18 @@ export default function ConfirmModal (props: {
   </Dialog>
     <Loading open={loading} />
     <Button fullWidth variant="contained" size="large"
-      onClick={() => {
+      onClick={() => unstable_batchedUpdates(() => {
+        const hash: string = abs(str(text)).toString(36);
+        setHash(hash);
+        const fileNameBEWithExt = getFileNameBEWithExt(hash);
+        setSearchParamForDataset(setSearchParams)(fileNameBEWithExt);
         setTrue();
-      }}
+        createOrAddIdb({
+          ...idbCommonArgs, data: getWillResolveData({ fileNameBEWithExt, text }), IDBValidKey: fileNameBEWithExt
+        });
+      })}
+      disabled={!text}
+
     >Next Step</Button>
   </>;
 }

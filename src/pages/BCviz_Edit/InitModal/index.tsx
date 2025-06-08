@@ -1,19 +1,25 @@
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Button, Dialog, Paper, Tab } from "@mui/material";
-import { useBoolean, useSafeState, useSetState } from "ahooks";
-import { UVEnumArr } from "..";
+import { useBoolean, useMemoizedFn, useMount, useSafeState, useSetState } from "ahooks";
+import { UVEnumArr, useGraghDataHistoryTravel, type UseGraghDataHistoryTravel } from "..";
 import type { UseSafeStateReturnType } from "@/pages/BCViz_new/TabPanelInput/TabPanelInput";
 import style from './_index.module.scss';
 import { initUVcount } from "../devTestData";
 import UVEnumTextfields from "../UVEnumTextFields";
 import type { UseUVCount } from "../UVEnumTextFields";
 import FileUploadSimple from "@/pages/BCviz/FileUploadSimple";
-import { fileUploadSimpleProps, type WillPatchData } from "@/pages/BCviz/FileUpload";
-import type { OriginGraphDataReadonlyArr, SetStateType } from "@/pages/BCviz/types";
+import { fileUploadSimpleProps, parseGraphData, type WillPatchData } from "@/pages/BCviz/FileUpload";
+import type { OriginGraphDataReadonlyArr } from "@/pages/BCviz/types";
 import { useMemo } from "react";
 import { clone, mapValues } from "lodash";
 import { UVenum } from "@/pages/BCviz/utils";
 import { isDEV } from "@/utils/isEnv";
+import { useSearchParams } from "react-router-dom";
+import useOnMount from "@mui/utils/useOnMount";
+import { getFile } from "@/pages/BCViz_new/api";
+import { datasetKey, setSearchParamForDataset } from "../utils";
+import { unstable_batchedUpdates } from "react-dom";
+import { commonUseSearchParams } from "@/pages/BCviz/const";
 const { isArray } = Array;
 const enum TabKey {
   'create',
@@ -48,11 +54,12 @@ const fileUploadProp = mapValues(fileUploadSimpleProps[0], (value, key) => {
 }) as (typeof fileUploadSimpleProps)[number];
 export default function InitModal (props: {
   readonly useFileName: UseSafeStateReturnType<string>,
-  readonly setGraghData: SetStateType<OriginGraphDataReadonlyArr>;
+  // readonly setGraghData: SetStateType<OriginGraphDataReadonlyArr>;
+  readonly setGraghData: UseGraghDataHistoryTravel['setValue'];
 } & UseUVCount) {
   const { useFileName, useUVCount, setGraghData } = props;
   const [, setUvCount] = useUVCount;
-  const [isOpen, { setFalse }] = useBoolean(true);
+  const [isOpen, { setTrue, setFalse }] = useBoolean(false);
   const [tab, setTab] = useSafeState<number>(
     isDEV ? TabKey.file :
       TabKey.create);
@@ -73,6 +80,42 @@ export default function InitModal (props: {
     }
     return true;
   }, [tab, uvCountInner, willPatchData]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const comfirmFile = useMemoizedFn(({ data, fileName }: NonNullable<typeof willPatchData>) => {
+    const maxUV = findMaxUV(data);
+    if (maxUV) {
+      setUvCount(maxUV);
+      setFileName(fileName);
+      setGraghData(data);
+      setSearchParamForDataset(setSearchParams)(fileName);
+      setFalse();
+    }
+  });
+  const openDialog = useMemoizedFn(() => unstable_batchedUpdates(() => {
+    setSearchParams(new URLSearchParams(), commonUseSearchParams);
+    setTrue();
+  }));
+  useMount(() => {
+    const fileName = searchParams.get(datasetKey);
+    if (!fileName) {
+      return openDialog();
+    }
+    getFile(fileName).then((fetchDataReturn) => {
+      if (!fetchDataReturn) {
+        return openDialog();
+      }
+      const { fileData } = fetchDataReturn;
+      comfirmFile({
+        fileName,
+        data: parseGraphData(fileData)
+      });
+      return setFalse();
+    }, (e) => {
+      console.error(e);
+      return openDialog();
+    });
+  });
+
   // const [] = useUVCount;
   return <Dialog open={isOpen} className={style['Dialog'] ?? ""}>
     <Paper elevation={24} className={style['Paper'] ?? ""}>
@@ -149,7 +192,6 @@ export default function InitModal (props: {
         isButtonDisabled
       }
         variant="contained"
-
         onClick={() => {
           switch (tab) {
             case TabKey.create: {
@@ -158,16 +200,8 @@ export default function InitModal (props: {
             }
             case TabKey.file: {
               if (willPatchData) {
-                const { fileName, data } = willPatchData;
-                setFileName(fileName);
-                setGraghData(data);
-
-                const maxUV = findMaxUV(data);
-                if (maxUV) {
-                  setUvCount(maxUV);
-                }
+                comfirmFile(willPatchData);
               }
-
               break;
             }
           }

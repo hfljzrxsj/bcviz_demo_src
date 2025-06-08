@@ -1,5 +1,6 @@
-import { type ReactPortal, Fragment, StrictMode, type SuspenseProps, type ProfilerProps, type PropsWithChildren, type DOMAttributes, type ProviderProps, } from "react";
-
+import {
+  type ReactPortal, Fragment, StrictMode, type SuspenseProps, type ProfilerProps, type PropsWithChildren, type DOMAttributes, type ProviderProps, JSX,
+} from "react";
 export type Children = Pick<ReactPortal, 'children'> &
   Pick<ProviderProps<unknown>, 'children'> &
   Parameters<typeof Fragment>[0] &

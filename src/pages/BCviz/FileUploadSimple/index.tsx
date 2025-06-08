@@ -130,14 +130,12 @@ export default function FileUploadSimple<T extends JSON_ARR> (props: {
       if (res) {
         const { fileInfo, fileData } = res;
         const parseFileData = parseData(fileData);
-        console.log(JSON.stringify(parseFileData));
         if (parseFileData.length === 0) {
           toast.error('The file format is incorrect!');
           return;
         }
         setFileInfo(fileInfo);
         setWillPatchDataWithName(parseFileData, url);
-        console.log(JSON.stringify(parseFileData));
       }
     }, error).catch(error);
   });

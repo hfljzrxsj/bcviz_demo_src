@@ -3,23 +3,25 @@ import BCViz_newStyle from "../BCViz_new/_index.module.scss";
 import style from "./_index.module.scss";
 import SideCollapse from "../BCViz_new/SideCollapse";
 import CommonCharts, { type onEChartsParam, type onEChartsParamFunc } from "../BCViz_new/CommonECharts";
-import { useCreation, useMemoizedFn, usePrevious, useSafeState, useSetState, useUpdateEffect } from "ahooks";
+import { useCreation, useHistoryTravel, useMemoizedFn, useMount, usePrevious, useSafeState, useSetState, useUpdateEffect } from "ahooks";
 import { UVenum, getCommonValueFromTableData, getDataArrWithPos } from "../BCviz/utils";
 import type { OriginDataObjReadonlyArr, OriginGraphData, OriginGraphDataReadonlyArr } from "../BCviz/types";
 import InitModal from "./InitModal";
 import { type CSSProperties, useMemo } from "react";
 import { every, flatMapDepth, isUndefined, some } from "lodash";
 import { svgWH } from "../BCViz_new/utils";
-import { type Link, getGraphOption } from "../BCViz_new/Echarts";
+import { type LinksEChartsType, getGraphOption } from "../BCViz_new/Echarts";
 import { uvHighlightColor } from "../BCViz_new";
 import type { CallbackDataParams } from "echarts/types/dist/shared";
 import classNames from 'clsx';
 import { isDEV } from "@/utils/isEnv";
 import { initUVcount, testGraphData } from "./devTestData";
-import { useNavigate } from "react-router";
 // import md5 from 'md5';
 import SideModifyNodeCount from "./SideModifyNodeCount";
 import ConfirmModal from "./ConfirmModal";
+import Menu from "./Menu";
+import ReUndo from "./ReUndo";
+
 // import { } from '@types/md5';
 const { freeze, fromEntries } = Object;
 const { from } = Array;
@@ -30,16 +32,19 @@ const { abs } = Math;
 const initFilename = `file-${new Date().toJSON()}`;
 
 export const UVEnumArr = freeze([UVenum.U, UVenum.V]);
+export const useGraghDataHistoryTravel = useHistoryTravel<OriginGraphDataReadonlyArr>;
+export type UseGraghDataHistoryTravel = ReturnType<typeof useGraghDataHistoryTravel>;
 export default function BCviz_Edit () {
   const useFileName = useSafeState<string | undefined>(initFilename);
   const [fileName = initFilename, setFileName] = useFileName;
   const useUVCount = useSetState(initUVcount);
   const [uvCount, setUvCount] = useUVCount;
   const lastUvCount = usePrevious(uvCount);
-  const [graphData, setGraghData] = useSafeState<OriginGraphDataReadonlyArr>(isDEV ? testGraphData : ([{
+  const graghDataHistoryTravel = useGraghDataHistoryTravel(isDEV ? testGraphData : ([{
     u: 1,
     v: 1,
   }]));
+  const { value: graphData, setValue: setGraghData, reset: resetGraghData } = graghDataHistoryTravel;
   // useUpdateEffect(() => {
 
   //  }, [uvCount]);
@@ -52,7 +57,7 @@ export default function BCviz_Edit () {
   }, [uvCount]);
   useUpdateEffect(() => {
     // 新的数量比原来少
-    if (some(uvCount, (count, uv) => {
+    if (graphData && some(uvCount, (count, uv) => {
       if (isUndefined(count) || isUndefined(lastUvCount)) {
         return false;
       }
@@ -103,12 +108,13 @@ export default function BCviz_Edit () {
   }, [selectDot, tableData]);
 
   const GraphChartsOption = useMemo(() => { // TODO: 可以只变更series，其他在一开始就输入进去
-
-
     return getGraphOption({ dataArrWithPos: tableDataInSelect, graphData, emphasisFocus: 'none' });
   }, [tableDataInSelect, graphData]);
   // const [tableData, setTableData] = useSafeState<PosDataObjArr>([]);
   const onClickFn: onEChartsParamFunc = useMemoizedFn((eCElementEvent) => {
+    if (!graphData) {
+      return;
+    }
     const {
       // componentSubType,
       // componentType,
@@ -169,6 +175,9 @@ export default function BCviz_Edit () {
   });
   const onClick: onEChartsParam = ['click', 'series', onClickFn];
   const onDblClickFn = useMemoizedFn((eCElementEvent) => {
+    if (!graphData) {
+      return;
+    }
     const {
       // componentSubType,
       // componentType,
@@ -177,7 +186,7 @@ export default function BCviz_Edit () {
       data,
       dataType,
     } = eCElementEvent as CallbackDataParams;
-    const dataWithType = data as Link;
+    const dataWithType = data as LinksEChartsType;
 
     if (isSafeInteger(dataIndex) && name && dataType === 'edge') {
       const { source, target } = dataWithType;
@@ -202,9 +211,12 @@ export default function BCviz_Edit () {
     }
   });
   const onDblClick: onEChartsParam = ['dblclick', 'series', onDblClickFn];
-  const textBipartiteGraph = useCreation(() => graphData.map(({ u, v }) => `${u} ${v}`).join('\n'), [graphData]);
+  const textBipartiteGraph = useCreation(() => graphData ? (graphData.map(({ u, v }) => `${u} ${v}`).join('\n')) : '', [graphData]);
+  // useMount(() => {
+  //   console.log('hjx');
+  // });
   return <Paper elevation={24} className={BCViz_newStyle['Main'] ?? ''}>
-    <InitModal {...{ useFileName, useUVCount, setGraghData }} />
+    <InitModal {...{ useFileName, useUVCount, setGraghData: resetGraghData }} />
     <SideCollapse isOpen={false}>
       <SideModifyNodeCount {...{ useUVCount }} />
     </SideCollapse>
@@ -218,12 +230,13 @@ export default function BCviz_Edit () {
         fileName={fileName}
       />
     </Paper>
+    <ReUndo graghDataHistoryTravel={graghDataHistoryTravel} />
+    <Menu />
   </Paper>;
 }
 
 /*
 1. 历史记录管理（indexedb+searchparam）
 2. 使用帮助提示
-5. 一条边都没有时，按钮变灰
 
 */

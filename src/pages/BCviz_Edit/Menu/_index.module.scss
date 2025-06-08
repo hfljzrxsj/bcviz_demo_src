@@ -1,0 +1,15 @@
+.absolute {
+  position: absolute;
+  left: 0;
+  top: 0;
+  opacity: .8;
+  transition: 1s;
+  // transform: scale(.8);
+  // transform-origin: center;
+  // transform-box: border-box;
+
+  &:hover {
+    opacity: 1;
+    // transform: scale(1);
+  }
+}

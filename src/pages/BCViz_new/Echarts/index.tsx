@@ -199,7 +199,7 @@ const getLineStyleWidthFunc = (isBiggerThanShowAllCount: boolean, superWidthArr:
     return (e: number) => e;
   }
 };
-export type Link = NonNullable<GraphSeriesOption['links']>[number];
+export type LinksEChartsType = NonNullable<GraphSeriesOption['links']>[number];
 export const getGraphOption = (
   {
     dataArrWithPos,
@@ -352,7 +352,7 @@ export const getGraphOption = (
             },
             // graphLinkColor[ind]
             superWidth,
-          } as Link);
+          } as LinksEChartsType);
         }) as GraphSeriesOption['links'],
         lineStyle: {
           // width:1,
