@@ -1,22 +1,20 @@
-import { Button, Dialog, Divider, Paper, Select, FormControl, InputLabel, MenuItem, Tooltip, Fab, IconButton } from "@mui/material";
-import { useBoolean, useEventTarget } from "ahooks";
+import { Button, Dialog, Divider, Paper, Select, FormControl, InputLabel, MenuItem, Tooltip, Fab, IconButton, Switch, FormControlLabel, ToggleButton, Link } from "@mui/material";
+import { useBoolean, useLocalStorageState } from "ahooks";
 import style from './_index.module.scss';
-// import clsx from 'clsx';
 import classNames from "clsx";
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import { Modes, tanContentClass } from "../utils";
 import type { SetStateType } from "@/pages/BCviz/types";
 import { delAllDB } from "@/utils/idb";
-import { useSafeState, useMount } from 'ahooks';
-
+import HelpOutlineIcon from '@mui/icons-material/HelpOutline';
+import { waitLastEventLoop } from "@/utils";
 export const enum RenderingEngine {
   'SVG Engine',
   'ECharts Engine'
 }
 export type keyofRenderingEngine = keyof typeof RenderingEngine;
 
-const HighlightHSSMode = () => <span className={tanContentClass}>{Modes['Hierarchical Subgraphs Search']}</span>;
+// const HighlightHSSMode = () => <span className={tanContentClass}>{Modes['Hierarchical Subgraphs Search']}</span>;
 const RenderingEngineToJsx = ({ renderingEngine }: {
   readonly renderingEngine: keyofRenderingEngine;
 }) => {
@@ -31,14 +29,20 @@ const RenderingEngineToJsx = ({ renderingEngine }: {
       return <>Suitable for large data volumes. With many available functions and high performance.</>;
   }
 };
+export const useIsEnableSuperGraphLocalStorageState = useLocalStorageState<boolean>;
+
 const SelectRenderingEngineStr = 'Select Rendering Engine';
+const What_is_Super_Graph = "What's Super Graph";
+const SG_introURL = 'https://encyclopediaofmath.org/wiki/Hypergraph';
 export default function Settings (props: {
   readonly setSelectEngine: SetStateType<keyofRenderingEngine>;
   readonly selectEngine: keyofRenderingEngine;
+  readonly useIsEnableSuperGraph: ReturnType<typeof useIsEnableSuperGraphLocalStorageState>;
 }) {
   const {
     setSelectEngine,
     selectEngine,
+    useIsEnableSuperGraph: [isEnableSuperGraph = false, setIsEnableSuperGraph],
   } = props;
   const [isOpen, { setTrue, setFalse }] = useBoolean(false);
   // const [dbLength, setDbLength] = useSafeState(0);
@@ -71,7 +75,7 @@ export default function Settings (props: {
           <h3>Settings</h3>
         </Paper>
         <Divider />
-        <Paper key='content' elevation={24}
+        <Paper key='engine' elevation={24}
           className={classNames(style['Paper'])}
         ><FormControl fullWidth >
             <Tooltip arrow title={SelectRenderingEngineStr}
@@ -119,7 +123,50 @@ export default function Settings (props: {
           </FormControl>
         </Paper>
         <Divider />
-        <Paper key='content' elevation={24}
+        <Paper key='SG' elevation={24} className={classNames(style['Paper'], style['SG'])}>
+          <Tooltip title='Need Reload' arrow placement="left">
+            <ToggleButton selected={isEnableSuperGraph}
+              value=""
+              className={classNames(style['SG-ToggleButton'])}
+            // onChange={(e) => {
+            //   console.log(e);
+
+            //   setIsEnableSuperGraph(!isEnableSuperGraph);
+            // }}
+            >
+              <FormControlLabel control={<Switch defaultChecked checked={isEnableSuperGraph} />}
+                label="Enable Super Graph"
+                autoFocus
+                className={classNames(style['SG-ToggleButton-FormControlLabel'])}
+                onChange={(e, v) => {
+                  setIsEnableSuperGraph(v);
+                  waitLastEventLoop(() => {
+                    location.reload();
+                  });
+                }}
+              />
+            </ToggleButton></Tooltip>
+          <Link href={SG_introURL} underline='hover'
+            target="_blank"
+          >
+            <Fab
+              size='large'
+              // onClick={() => {
+              //   open('https://encyclopediaofmath.org/wiki/Hypergraph');
+              // }}
+              title={SG_introURL}
+            ><Tooltip title={What_is_Super_Graph} arrow placement='right'>
+                <IconButton size='large'
+                  color='info'
+                >
+                  <HelpOutlineIcon fontSize='large' color='primary' />
+                </IconButton>
+              </Tooltip></Fab>
+          </Link>
+
+        </Paper>
+        <Divider />
+        <Paper key='clear' elevation={24}
           className={classNames(style['Paper'])}
         >
           <Button size='large' variant="contained"
@@ -153,3 +200,25 @@ export default function Settings (props: {
     </>
   );
 };
+// {
+//   (isShowAllSelect) ? <Paper elevation={24} className={style['Select'] ?? ''} >
+//     <FormControl fullWidth>
+//       <InputLabel
+//       >Numebr Of Show Vertices</InputLabel>
+//       <Select
+//         value={Number(isShowAll)}
+//         onChange={(e) => {
+//           setIsShowAll(Boolean(e.target.value));
+//         }}
+//         label="Numebr Of Show Vertices"
+//         fullWidth
+//       >
+//         <MenuItem value={1} key={1}
+//         >Show All</MenuItem>
+//         <MenuItem value={0} key={0}
+//           title={`Top ${showAllCount} in descending order of Cohesion`}
+//         >Only Show {showAllCount}</MenuItem>
+//       </Select>
+//     </FormControl>
+//   </Paper> : null;
+// }

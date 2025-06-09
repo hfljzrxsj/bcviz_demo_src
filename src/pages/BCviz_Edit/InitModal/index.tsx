@@ -1,6 +1,6 @@
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { Button, Dialog, Paper, Tab } from "@mui/material";
-import { useBoolean, useMemoizedFn, useMount, useSafeState, useSetState } from "ahooks";
+import { useBoolean, useMemoizedFn, useMount, useSafeState, useSetState, useUpdateEffect } from "ahooks";
 import { UVEnumArr, useGraghDataHistoryTravel, type UseGraghDataHistoryTravel } from "..";
 import type { UseSafeStateReturnType } from "@/pages/BCViz_new/TabPanelInput/TabPanelInput";
 import style from './_index.module.scss';
@@ -15,7 +15,6 @@ import { clone, mapValues } from "lodash";
 import { UVenum } from "@/pages/BCviz/utils";
 import { isDEV } from "@/utils/isEnv";
 import { useSearchParams } from "react-router-dom";
-import useOnMount from "@mui/utils/useOnMount";
 import { getFile } from "@/pages/BCViz_new/api";
 import { datasetKey, setSearchParamForDataset } from "../utils";
 import { unstable_batchedUpdates } from "react-dom";
@@ -95,7 +94,7 @@ export default function InitModal (props: {
     setSearchParams(new URLSearchParams(), commonUseSearchParams);
     setTrue();
   }));
-  useMount(() => {
+  useUpdateEffect(() => {
     const fileName = searchParams.get(datasetKey);
     if (!fileName) {
       return openDialog();
@@ -114,7 +113,7 @@ export default function InitModal (props: {
       console.error(e);
       return openDialog();
     });
-  });
+  }, [searchParams]);
 
   // const [] = useUVCount;
   return <Dialog open={isOpen} className={style['Dialog'] ?? ""}>

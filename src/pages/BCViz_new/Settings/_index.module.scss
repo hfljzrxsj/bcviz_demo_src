@@ -4,4 +4,23 @@
 .Fab {
   @extend %Fab;
   position: fixed;
+
+}
+
+.SG {
+  display: flex;
+  gap: 9q;
+
+  &-ToggleButton {
+    padding: 0;
+    border: unset;
+    // outline: solid;
+
+    &-FormControlLabel {
+      $common_padding: 9q;
+      padding: $common_padding 1pc $common_padding $common_padding;
+      // padding-right: 1pc;
+      margin: 0;
+    }
+  }
 }

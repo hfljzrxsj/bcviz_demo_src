@@ -36,7 +36,7 @@ import SVGCharts from "./SVGCharts";
 import useBCVizFnHooks from "../BCviz/hooks";
 import Echarts, { tanColorContentJsx } from "./Echarts";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
-import Settings, { type keyofRenderingEngine } from "./Settings";
+import Settings, { useIsEnableSuperGraphLocalStorageState, type keyofRenderingEngine } from "./Settings";
 import { isUndefined, every } from "lodash";
 import { TabKey } from "./utils";
 import InputSize from "./InputSize";
@@ -134,6 +134,7 @@ const CustomTab = ({ tabKey, ...props }: Omit<Parameters<typeof Tab>[0], 'label'
   />;
 const Select_Mode = 'Select Mode';
 const Choose_Rank = 'Choose Rank';
+const SG_str = 'SG';
 export default function BCViz_new () {
   // const ref = useRef<HTMLDivElement>(null);
   useMount(() => {
@@ -173,7 +174,10 @@ export default function BCViz_new () {
     ...commonUseRequestParams,
     manual: true,
   });
-  const isBiggerThanShowAllCount = (originTableData ? originTableData.length > showAllCount : false);  //isPROD &&
+  const useIsEnableSuperGraph = useIsEnableSuperGraphLocalStorageState(SG_str, { defaultValue: true });
+  const [isEnableSuperGraph, setIsEnableSuperGraph] = useIsEnableSuperGraph;
+
+  const isBiggerThanShowAllCount = isEnableSuperGraph && (originTableData ? originTableData.length > showAllCount : false);  //isPROD &&
   useUpdateEffect(() => {
     mutate(undefined);
     if (originTableData) {
@@ -183,7 +187,7 @@ export default function BCViz_new () {
           ...fileNames,
           s: meaninglessStr,
           t: meaninglessStr,
-          problem_type: 'SG',
+          problem_type: SG_str,
           vex_list: (10).toString(),
         });
       } else {
@@ -227,6 +231,7 @@ export default function BCViz_new () {
   const [selectEngine, setSelectEngine] = useSafeState<keyofRenderingEngine>(
     // isDEV ? 'SVG Engine' :
     'ECharts Engine');
+
 
   const isEditX = useMemo(() => isEditXFunc(selectMode), [selectMode]);
   const [selectShowItem, setSelectShowItem] = useSafeState<number>(0);
@@ -473,7 +478,7 @@ export default function BCViz_new () {
 
       // }}
       >
-        <Settings {...{ setSelectEngine, selectEngine }} />
+        <Settings {...{ setSelectEngine, selectEngine, useIsEnableSuperGraph }} />
         <SideCollapse>
           <Paper elevation={24} className={style['Main-Left'] ?? ''}>
             <Tool {...{
@@ -485,26 +490,7 @@ export default function BCViz_new () {
               setFileNames={[setdataset, setBCviz_file]}
               className={style['Tool']}
             />
-            {(isShowAllSelect) ? <Paper elevation={24} className={style['Select'] ?? ''} >
-              <FormControl fullWidth>
-                <InputLabel
-                >Numebr Of Show Vertices</InputLabel>
-                <Select
-                  value={Number(isShowAll)}
-                  onChange={(e) => {
-                    setIsShowAll(Boolean(e.target.value));
-                  }}
-                  label="Numebr Of Show Vertices"
-                  fullWidth
-                >
-                  <MenuItem value={1} key={1}
-                  >Show All</MenuItem>
-                  <MenuItem value={0} key={0}
-                    title={`Top ${showAllCount} in descending order of Cohesion`}
-                  >Only Show {showAllCount}</MenuItem>
-                </Select>
-              </FormControl>
-            </Paper> : null}
+
             <Paper elevation={24} className={style['Select'] ?? ''}>
               <FormControl fullWidth>
                 <InputLabel
@@ -645,7 +631,13 @@ export default function BCViz_new () {
               >
                 {/* <Tab label="All" value={TabKey.all} className={style['Tab'] ?? ''} /> */}
                 <CustomTab tabKey={TabKey.table} />
-                <CustomTab tabKey={TabKey.graph} />
+                <Tooltip arrow
+                  title={superData ?
+                    'Super Graph'
+                    : null}
+                // placement="right"
+                >
+                  <CustomTab tabKey={TabKey.graph} /></Tooltip>
                 <Tooltip arrow
                   title={params ?
                     <>

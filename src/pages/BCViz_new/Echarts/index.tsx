@@ -1,35 +1,24 @@
-import { useMemo, type ReactNode, type CSSProperties, useDeferredValue } from "react";
-import type { DataArrWithPos, HSSProps, OriginGraphDataReadonlyArr, OriginGraphDataSuper, OriginGraphDataSuperArr, OriginGraphDataSuperReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetStateType, getCommonValueFromTableDataReturnType } from "@/pages/BCviz/types";
-import { UVenum, clickToSetSize, doubleClickCircleFnForECharts, getCommonValueFromTableData, getDataArrWithPos, getGraphLinkColor, isEditXFunc, type VisualMapSection } from "@/pages/BCviz/utils";
-import { TabKey, TabKey2Title, getDataArrWithPosWithCommonValueFromTableData, getDotName, getFileIdb, getSymbolSize, maxRadius, minRadius, svgWH, tanContentClass } from "../utils";
+import { useMemo, type ReactNode, type CSSProperties } from "react";
+import type { HSSProps, OriginGraphDataReadonlyArr, OriginGraphDataSuperReadonlyArr, PosDataObj, PosDataObjArr, SVGChartsProps, SetStateType, getCommonValueFromTableDataReturnType } from "@/pages/BCviz/types";
+import { UVenum, clickToSetSize, getCommonValueFromTableData, getDataArrWithPos, getGraphLinkColor, isEditXFunc, type VisualMapSection } from "@/pages/BCviz/utils";
+import { TabKey, TabKey2Title, getDotName, maxRadius, minRadius, svgWH, tanContentClass } from "../utils";
 import CommonCharts, { resizeEvent, type AxisPointerComponentOption, type EChartsOption, type GraphSeriesOption, type LineSeriesOption, type MarkAreaComponentOption, type TooltipComponentOption, type onEChartsParam, type onEChartsParamFunc } from "../CommonECharts";
 import { freeze } from "immer";
-import { clamp, debounce, head, isUndefined, last, map, negate, uniq, without } from "lodash";
+import { debounce, head, isUndefined, map, negate, uniq } from "lodash";
 import { renderToStaticMarkup } from "react-dom/server";
 import { Modes } from "../utils";
 import type { InputSTSetState } from "../InputST";
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-toastify';
 import type { UseSetInputST } from "../TabPanelInput/TabPanelInput";
 import type { execTextType } from "../api";
 import ChartsTabPanel from "../ChartsPaper";
-import { useDebounceFn, useLockFn, useMemoizedFn, usePrevious, useSafeState, useUpdateEffect, } from 'ahooks';
+import { useLockFn, useMemoizedFn, usePrevious, useSafeState, useUpdateEffect, } from 'ahooks';
 import type { CallbackDataParams } from 'echarts/types/dist/shared';
 import { Paper } from '@mui/material';
-import OutlinedInput from '@mui/material/OutlinedInput';
-import InputLabel from '@mui/material/InputLabel';
-import MenuItem from '@mui/material/MenuItem';
-import FormControl from '@mui/material/FormControl';
-import Select
-  // ,{ type SelectChangeEvent }
-  from '@mui/material/Select';
-import Chip from '@mui/material/Chip';
 import Checkbox from '@mui/material/Checkbox';
-import ListItemText from '@mui/material/ListItemText';
 import style from './_index.module.scss';
-import { showAllCount } from "..";
 //@ts-expect-error
 import echartsGlobalDefault from 'echarts/lib/model/globalDefault';
-import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -232,8 +221,14 @@ export const getGraphOption = (
   const superWidthArr = uniq(graphData.map(({ superWidth }) => superWidth)) as Parameters<typeof getLineStyleWidthFunc>[1];
   const getLineStyleWidth = getLineStyleWidthFunc(isBiggerThanShowAllCount, superWidthArr);
 
-
   const option = ({
+    ...(isBiggerThanShowAllCount ? {
+      title: {
+        text: `Super Graph`,
+        // left: "center",
+        // top: "center",
+      }
+    } : undefined),
     ...commonEChartsOption,
     tooltip: {
       // position: 'top'
@@ -245,6 +240,7 @@ export const getGraphOption = (
     },
     series: [
       {
+
         type: 'graph',
         // symbolSize: 30,
         ...commonSeriesOption,

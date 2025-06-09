@@ -69,9 +69,7 @@ export default function BCviz_Edit () {
         return !isUndefined(count) && v <= count;
       }));
       if (graphData.length > newGraphData.length) {
-
-
-        setGraghData(newGraphData);
+        resetGraghData(newGraphData);
       }
     }
     // setGraghData(graphData);
@@ -236,7 +234,6 @@ export default function BCviz_Edit () {
 }
 
 /*
-1. 历史记录管理（indexedb+searchparam）
-2. 使用帮助提示
+1. 历史记录管理（indexedb）
 
 */

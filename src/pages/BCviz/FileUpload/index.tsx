@@ -400,9 +400,7 @@ export default function FileUpload (props: FileUploadProps) {
 // 控制台：https://lavm-console.jdcloud.com/lavm/detail/cn-north-1/lavm-l1f5f2rdrk
 
 /* 马上要做的：
-1. 如果是超图，Tab标题、ECharts左上角title应该标注超图
-2. 自定义绘制图：历史记录、帮助提示（返回上一页）
-3. 上传文件时，如果不是示例文件，且后端无hash，先上传后端
+2. 自定义绘制图：历史记录
 
   */
 // 在别的Modes也要显示size 的直线
